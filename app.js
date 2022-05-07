@@ -313,10 +313,12 @@ app.get('/document/upload&sign', async (req, res) => {
 })
 app.get('/document/upload', async (req, res) => {
   if (req.session.user && req.cookies.user_sid) {
+    const users = await userSchema.find()
     res.render('upload', {
       layout: 'layouts/main-layout-login',
       title: 'Digital Sign',
-      msg: req.flash('msg')
+      msg: req.flash('msg'),
+      users
     })
   } else {
     res.redirect('/signin')

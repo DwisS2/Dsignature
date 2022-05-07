@@ -299,3 +299,101 @@ textarea {
   color: white;
   border-color: #2b4eff;
 }
+
+/* 
+todo block 
+----------
+*/
+.todoBlock {
+  padding: 30px;
+  margin: 30px 0;
+  background: #fff;
+  box-shadow: 5px 5px 20px -5px rgba(0, 0, 0, 0.2);
+}
+
+.todoBlock .titleHolder {
+  margin: 0 0 30px;
+}
+
+/* 
+list holder
+-----------
+*/
+.listHolder li {
+  counter-increment: step-counter;
+  overflow: hidden;
+  padding: 0 0 20px 30px;
+  position: relative;
+}
+
+.listHolder li:before {
+  content: counter(step-counter);
+  background: #4ac7be;
+  color: #fff;
+  font-size: 14px;
+  padding: 0px 6px;
+  border-radius: 3px;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.listHolder .listName {
+  float: left;
+}
+
+.listHolder .btn-icon {
+  float: right;
+  margin: 0 0 0 20px;
+}
+
+/* 
+form holder
+-----------
+*/
+.formHolder {
+  margin: 0 -5px;
+  overflow: hidden;
+  position: relative;
+}
+
+.formHolder .col {
+  float: left;
+  width: 20%;
+  padding: 0 5px;
+}
+
+.formHolder .col.big {
+  width: 60%;
+}
+
+.btn-icon {
+  background: none;
+  border: none;
+  display: inline-block;
+  vertical-align: top;
+  color: #333;
+  cursor: pointer;
+  transition: background 0.3s linear, color 0.3s linear;
+}
+
+.btn-icon:focus {
+  outline: none;
+}
+
+.btn-icon:before {
+  font-family: 'Font Awesome 5 Free';
+  font-weight: 900;
+}
+
+.btn-icon.remove:before {
+  content: '\f2ed';
+}
+
+.btn-icon.down:before {
+  content: '\f063';
+}
+
+.btn-icon.up:before {
+  content: '\f062';
+}
