@@ -1,0 +1,118 @@
+<div id="__next">
+  <main>
+    <section class="signup__area po-rel-z1 pt-100 pb-145">
+      <div class="sign__shape">
+        <img
+          class="man-1"
+          src="/img/icon/sign/man-3.png"
+          alt="img not found"
+        /><img
+          class="man-2 man-22"
+          src="/img/icon/sign/man-2.png"
+          alt="img not found"
+        /><img
+          class="circle"
+          src="/img/icon/sign/circle.png"
+          alt="img not found"
+        /><img
+          class="zigzag"
+          src="/img/icon/sign/zigzag.png"
+          alt="img not found"
+        /><img
+          class="dot"
+          src="/img/icon/sign/dot.png"
+          alt="img not found"
+        /><img
+          class="bg"
+          src="/img/icon/sign/sign-up.png"
+          alt="img not found"
+        /><img
+          class="flower"
+          src="/img/icon/sign/flower.png"
+          alt="img not found"
+        />
+      </div>
+      <div class="container">
+        <div class="row">
+          <div class="col-xxl-8 offset-xxl-2 col-xl-8 offset-xl-2">
+            <div class="section__title-wrapper text-center mb-55">
+              <h2 class="section__title">
+                Create Account
+              </h2>
+              <% if (messages) { %>
+              <p><%= messages.error %></p>
+              <% } %>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div
+            class="col-xxl-6 offset-xxl-3 col-xl-6 offset-xl-3 col-lg-8 offset-lg-2"
+          >
+            <div class="sign__wrapper white-bg">
+              <div class="sign__form">
+                <form action="/register" method="POST">
+                  <div class="sign__input-wrapper mb-25">
+                    <h5>Full Name</h5>
+                    <div class="sign__input">
+                      <input
+                        type="name"
+                        name="name"
+                        placeholder="Full name"
+                      /><i class="fa fa-user" aria-hidden="true"></i>
+                    </div>
+                  </div>
+                  <div class="sign__input-wrapper mb-25">
+                    <h5>Email</h5>
+                    <div class="sign__input">
+                      <input
+                        type="email"
+                        name="email"
+                        placeholder="e-mail address"
+                      /><i class="fa fa-sign-in" aria-hidden="true"></i>
+                    </div>
+                  </div>
+                  <div class="sign__input-wrapper mb-25">
+                    <h5>Role</h5>
+                    <div class="sign__input">
+                      <i class="fa fa-user" aria-hidden="true"></i>
+                      <select id="role_id" name="role">
+                        <option value selected>--- Chose Role ---</option>
+                        <option value="Kepala Sekolah">Kepala Sekolah</option>
+                        <option value="Wakil Kepala Sekolah"
+                          >Wakil Kepala Sekolah</option
+                        >
+                        <option value="Staff">Staff</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="sign__input-wrapper mb-25">
+                    <h5>Password</h5>
+                    <div class="sign__input">
+                      <input
+                        type="password"
+                        name="password"
+                        placeholder="Password"
+                      /><i class="fa fa-unlock-alt" aria-hidden="true"></i>
+                    </div>
+                  </div>
+
+                  <div
+                    class="sign__action d-flex justify-content-between mb-30"
+                  ></div>
+                  <button class="e-btn w-100"><span></span> Sign Up</button>
+                  <div class="sign__new text-center mt-20">
+                    <p>
+                      Already in Digital Signature ?
+                      <a href="/signin">Sign In</a>
+                    </p>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>

@@ -10,29 +10,27 @@ const documentSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'users'
   },
-
   document: {
     type: String,
-
     required: true
   },
   nm_document: {
     type: String,
     required: true
   },
-
   certificate_number: {
     type: String,
     required: true
-  },
-  password: {
-    type: String
   },
   status: {
     type: String
     // required: true
   },
   timeCreated: {
+    type: Date,
+    default: () => Date.now()
+  },
+  timeSigned: {
     type: Date,
     default: () => Date.now()
   }

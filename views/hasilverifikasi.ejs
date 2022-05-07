@@ -1,0 +1,121 @@
+<div id="__next">
+  <main>
+    <main>
+      <section
+        class="hero__area hero__height d-flex align-items-center grey-bg-2 p-relative"
+      >
+        <div class="hero__shape">
+          <img
+            class="hero-1-circle"
+            src="/img/shape/hero/hero-1-circle.png"
+            alt="img not found"
+          /><img
+            class="hero-1-circle-2"
+            src="/img/shape/hero/hero-1-circle-2.png"
+            alt="img not found"
+          /><img
+            class="hero-1-dot-2"
+            src="/img/shape/hero/hero-1-dot-2.png"
+            alt="img not found"
+          />
+        </div>
+        <div class="container">
+          <div class="hero__content-wrapper mt-90">
+            <div class="row align-items-center">
+              <div class="col-xxl-6 col-xl-6 col-lg-6 col-md-6">
+                <div class="hero__content p-relative z-index-1">
+                  <h3 class="hero__title">
+                    <span class="yellow-shape"
+                      >Hasil Verifikasi
+                      <img src="/img/shape/yellow-bg.png" alt="yellow-shape" />
+                    </span>
+                  </h3>
+                </div>
+              </div>
+
+              <div class="col-xxl-6 col-xl-6 col-lg-6 col-md-6">
+                <div class="hero__thumb d-flex p-relative">
+                  <div class="hero__thumb-shape">
+                    <img
+                      class="hero-1-dot"
+                      src="/img/shape/hero/hero-1-dot.png"
+                      alt="img not found"
+                    /><img
+                      class="hero-1-circle-3"
+                      src="/img/shape/hero/hero-1-circle-3.png"
+                      alt="img not found"
+                    /><img
+                      class="hero-1-circle-4"
+                      src="/img/shape/hero/hero-1-circle-4.png"
+                      alt="img not found"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <br />
+          <div class="card">
+            <h5 class="card-header">
+              <i class="fa fa-file-pdf-o" aria-hidden="true"></i>
+              <%= namapdf %>
+            </h5>
+            <div class="card-body text-center">
+              <div class="alert alert-warning"><%= hasilpdf %></div>
+            </div>
+          </div>
+          <br />
+          <div class="col-xxl-6 col-xl-6 col-lg-6 col-md-6">
+            <div class="hero__content p-relative z-index-1">
+              <h3 class="hero__title">
+                <span class="yellow-shape"
+                  >Detail
+                  <img src="/img/shape/yellow-bg.png" alt="yellow-shape" />
+                </span>
+              </h3>
+            </div>
+          </div>
+          <div class="card">
+            <h5 class="card-header">
+              <i class="fa fa-file-pdf-o" aria-hidden="true"></i>
+              <%= namapdf %>
+            </h5>
+            <div class="card-body">
+              <table class="table table-condensed">
+                <tbody>
+                  <tr>
+                    <td>Ditandatangani oleh</td>
+                    <td><%= namapenandatangan %></td>
+                  </tr>
+                  <tr>
+                    <td>Email penandatangan</td>
+                    <td><%= emailpenandatangan %></td>
+                  </tr>
+                  <tr>
+                    <td>Lokasi</td>
+                    <td><%= lokasi %></td>
+                  </tr>
+                  <tr>
+                    <td>Organisasi</td>
+                    <td><%= organisasi %></td>
+                  </tr>
+                  <tr>
+                    <td>Integritas</td>
+                    <td><%= integritas %></td>
+                  </tr>
+
+                  <tr>
+                    <td>Keterangan</td>
+                    <td>
+                      <span class="text-warning"><%= hasilpdf %></span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </main>
+</div>

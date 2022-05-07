@@ -242,11 +242,36 @@ app.get('/digitalcertificate/createcertificate', async (req, res) => {
   }
 })
 app.get('/document', async (req, res) => {
-  const documents = await documentSchema.find().populate('id_user')
-
-  const no = 1
   if (req.session.user && req.cookies.user_sid) {
+    const documents = await documentSchema
+      .find({
+        id_user: req.session.user._id
+      })
+      .populate('id_user')
+
+    const no = 1
     res.render('dokumen', {
+      layout: 'layouts/main-layout-login',
+      title: 'Digital Sign',
+      documents,
+      msg: req.flash('msg')
+    })
+  } else {
+    res.redirect('/signin')
+  }
+})
+app.get('/document/signed_document', async (req, res) => {
+  if (req.session.user && req.cookies.user_sid) {
+    const documents = await documentSchema
+      .find({
+        id_signer: req.session.user._id
+      })
+      .find({ status: 'signed' })
+      .populate('id_signer')
+      .populate('id_user')
+
+    const no = 1
+    res.render('signed_document', {
       layout: 'layouts/main-layout-login',
       title: 'Digital Sign',
       documents,
@@ -286,13 +311,18 @@ app.get('/document/upload&sign', async (req, res) => {
     res.redirect('/signin')
   }
 })
-
-app.get('/tes123', async (req, res) => {
-  res.render('tes', {
-    layout: 'layouts/main-layout-login',
-    title: 'Digital Sign'
-  })
+app.get('/document/upload', async (req, res) => {
+  if (req.session.user && req.cookies.user_sid) {
+    res.render('upload', {
+      layout: 'layouts/main-layout-login',
+      title: 'Digital Sign',
+      msg: req.flash('msg')
+    })
+  } else {
+    res.redirect('/signin')
+  }
 })
+
 app.get('/signer', async (req, res, value) => {
   const signers = await signerSchema.find()
   const no = 1
@@ -538,14 +568,115 @@ app.get('/signer/home', async (req, res) => {
   }
 })
 app.get('/document/upload&sign/:_id', async (req, res) => {
-  const document = await Document.findOne({ _id: req.params._id })
   if (req.session.user && req.cookies.user_sid) {
+    const document = await Document.findOne({ _id: req.params._id })
+    const signature = await Signature.findOne({ id_user: req.session.user._id })
+
     res.render('viewpdf', {
       title: 'Digital Signature',
-      layout: 'layouts/viewpdf-layout.ejs',
+      layout: 'layouts/teslayout.ejs',
       document,
-      pdf: document.document
+      signature,
+      pdf: 'data:application/pdf;base64,' + document.document
     })
+  } else {
+    res.redirect('/signin')
+  }
+})
+
+app.put('/savepdfsign', async (req, res) => {
+  if (req.session.user && req.cookies.user_sid) {
+    const certificates = await Digital_certificate.find({
+      id_user: req.session.user._id
+    })
+    const dok = req.body.pdfbase64
+    const json = dok.substring(51)
+    const pdfBuffer = json
+    const p12Buffer = certificates[0].certificate_buffer
+
+    const SIGNATURE_LENGTH = 4352
+
+    ;(async () => {
+      const pdfDoc = await PDFDocument.load(pdfBuffer)
+      const pages = pdfDoc.getPages()
+      const firstPage = pages[pages.length - 1]
+
+      const ByteRange = PDFArrayCustom.withContext(pdfDoc.context)
+      ByteRange.push(PDFNumber.of(0))
+      ByteRange.push(PDFName.of(signer.DEFAULT_BYTE_RANGE_PLACEHOLDER))
+      ByteRange.push(PDFName.of(signer.DEFAULT_BYTE_RANGE_PLACEHOLDER))
+      ByteRange.push(PDFName.of(signer.DEFAULT_BYTE_RANGE_PLACEHOLDER))
+
+      const signatureDict = pdfDoc.context.obj({
+        Type: 'Sig',
+        Filter: 'Adobe.PPKLite',
+        SubFilter: 'adbe.pkcs7.detached',
+        ByteRange,
+        Contents: PDFHexString.of('A'.repeat(SIGNATURE_LENGTH)),
+        Reason: PDFString.of('We need your signature for reasons...'),
+        M: PDFString.fromDate(new Date())
+      })
+
+      const signatureDictRef = pdfDoc.context.register(signatureDict)
+
+      const widgetDict = pdfDoc.context.obj({
+        Type: 'Annot',
+        Subtype: 'Widget',
+        FT: 'Sig',
+        Rect: [57.64, 534.945, 480, 270],
+        // Rect: [image.width,image.height, 0, 0],
+        V: signatureDictRef,
+        T: PDFString.of('Signature1'),
+        F: 4,
+        P: pages[0].ref
+        // P: pages[pages.length - 1].ref, //lastPage
+        // AP: pdfDoc.context.obj({N: signatureAppearanceStreamRef})
+      })
+      const widgetDictRef = pdfDoc.context.register(widgetDict)
+
+      // Add our signature widget to the first page
+      pages[0].node.set(
+        PDFName.of('Annots'),
+        pdfDoc.context.obj([widgetDictRef])
+      )
+
+      // Create an AcroForm object containing our signature widget
+      pdfDoc.catalog.set(
+        PDFName.of('AcroForm'),
+        pdfDoc.context.obj({
+          SigFlags: 3,
+          Fields: [widgetDictRef]
+        })
+      )
+
+      const modifiedPdfBytes = await pdfDoc.save({ useObjectStreams: false })
+      const modifiedPdfBuffer = Buffer.from(modifiedPdfBytes)
+
+      const signObj = new signer.SignPdf()
+      const signedPdfBuffer = signObj.sign(modifiedPdfBuffer, p12Buffer, {
+        passphrase: certificates[0].certificate_password
+      })
+      const pdf = signedPdfBuffer.toString('base64') //PDF WORKS
+      try {
+        Document.updateOne(
+          { _id: req.body._id },
+          {
+            $set: {
+              document: pdf,
+              status: 'signed',
+              id_signer: req.session.user._id,
+              timeSigned: Date.now()
+            }
+          }
+        ).then(result => {
+          req.flash('msg', 'Document successfully signed!')
+          res.redirect('/document')
+        })
+      } catch (error) {
+        console.log(error)
+        res.redirect('/document/upload&sign/:_id')
+      }
+    })()
   } else {
     res.redirect('/signin')
   }
@@ -561,32 +692,31 @@ app.post('/document/upload&sign', async (req, res) => {
         id_user: req.session.user._id
       }).exec()
 
-      user.comparePassword(password, (error, match) => {
-        if (!match) {
-          req.flash('msg', 'Password incorrect!')
-          res.redirect('/document/upload&sign')
-        }
-      })
+      if (user.certificate_password != password) {
+        req.flash('msg', 'Password incorrect!')
+        res.redirect('/document/upload&sign')
+      } else {
+        const user_id = req.session.user._id
+        const base64document = req.files.document.data.toString('base64')
+        const nama_document = req.files.document.name
+        const document = new Document({
+          id_user: user_id,
+          document: base64document,
+          nm_document: nama_document,
+          status: 'in progress sign',
+          certificate_number: number,
+          timeSigned: ''
+        })
+        await document.save()
+        const id_doc = document._id
 
-      const user_id = req.session.user._id
-      const base64document = req.files.document.data.toString('base64')
-      const nama_document = req.files.document.name
-      const document = new Document({
-        id_user: user_id,
-        document: base64document,
-        nm_document: nama_document,
-        status: 'in progress sign',
-        certificate_number: number,
-        password: password
-      })
-      await document.save()
-      const id_doc = document._id
-
-      res.redirect('/document/upload&sign/' + id_doc)
+        res.redirect('/document/upload&sign/' + id_doc)
+      }
     } catch (error) {
       console.log(error)
-      res.redirect('/document.upload&sign')
+      res.redirect('/document/upload&sign')
     }
+
     // const nama_document = req.files.file.name
     // const buffer_document = req.files.file.data
     // const status_document = 'in progress sign'
@@ -660,6 +790,7 @@ app.post('/digitalsignature/createcertificate', async (req, res) => {
     const validity = req.body.validity
     const password = req.body.password
     const nama = req.session.user.name
+    const email = req.session.user.email
     const namap12 = nama + '.p12'
 
     try {
@@ -674,7 +805,9 @@ app.post('/digitalsignature/createcertificate', async (req, res) => {
         '-dname',
         'CN=' +
           nama +
-          ', OU=SMAN 90 Jakarta Selatan, O=SMAN 90 Jakarta Selatan, L=Jakarta Selatan, S=Jakarta Selatan, C=ID',
+          ', OU=SMAN 90 Jakarta Selatan, EMAILADDRESS=' +
+          email +
+          ', O=SMAN 90 Jakarta Selatan, L=Jakarta Selatan, S=Jakarta Selatan, C=ID',
         '-keyalg',
         'RSA',
         '-keysize',
@@ -699,8 +832,6 @@ app.post('/digitalsignature/createcertificate', async (req, res) => {
         console.log('child process exited with code ' + code)
       })
 
-      const hashedPassword = await bcrypt.hash(req.body.password, 10)
-
       setTimeout(() => {
         const {
           pemKey,
@@ -724,7 +855,7 @@ app.post('/digitalsignature/createcertificate', async (req, res) => {
           validity: validity1 + ' sampai ' + validity2,
           name: commonName.issuer.attributes[5].value,
           certificate_buffer: fs.readFileSync(namap12),
-          certificate_password: hashedPassword,
+          certificate_password: req.body.password,
           status: 'active'
         })
 
@@ -734,7 +865,7 @@ app.post('/digitalsignature/createcertificate', async (req, res) => {
           // if no error, file has been deleted successfully
           console.log('File deleted!')
         })
-      }, 15000)
+      }, 10000)
       res.redirect('/digitalcertificate')
     } catch (error) {
       console.log(error)
@@ -757,7 +888,9 @@ app.post('/hasilverifikasi', (req, res) => {
   // console.log(expired)
   if (!integrity) {
     hasilpdf = 'Dokumen tidak memiliki tanda tangan digital'
-  } else if (meta.certs[0].issuedTo.organizationName == 'sma') {
+  } else if (
+    meta.certs[0].issuedTo.organizationName == 'SMAN 90 Jakarta Selatan'
+  ) {
     hasilpdf = 'Tanda tangan digital pada dokumen valid'
   } else if (integrity == false) {
     hasilpdf = 'Dokumen tidak valid karna telah mengalami perubahan'
@@ -811,7 +944,9 @@ app.post('/hasilverifikasi2', (req, res) => {
   // console.log(expired)
   if (!integrity) {
     hasilpdf = 'Dokumen tidak memiliki tanda tangan digital'
-  } else if (meta.certs[0].issuedTo.organizationName == 'sma') {
+  } else if (
+    meta.certs[0].issuedTo.organizationName == 'SMAN 90 Jakarta Selatan'
+  ) {
     hasilpdf = 'Tanda tangan digital pada dokumen valid'
   } else if (integrity == false) {
     hasilpdf = 'Dokumen tidak valid karna telah mengalami perubahan'
@@ -927,22 +1062,18 @@ app.delete('/signature', (req, res) => {
   })
 })
 
-app.post('/signer/download/:nm_document', async (req, res) => {
+app.post('/document/download/:_id', async (req, res) => {
   const dokumenPdf = await Document.findOne({
-    nm_document: req.params.nm_document
+    _id: req.params._id
   })
   const bufferDokumen = dokumenPdf.document
-
-  // res.set({
-  //   'Content-Type': 'application/pdf',
-  //   'Content-Disposition': 'attachment; filename=tes.pdf'
-  // })
+  const download = Buffer.from(bufferDokumen, 'base64')
   res.setHeader(
     'Content-disposition',
     'inline; filename="' + dokumenPdf.nm_document + '.pdf"'
   )
   res.setHeader('Content-type', 'application/pdf')
-  res.end(bufferDokumen)
+  res.end(download)
 })
 
 app.post('/signer/home/:_id', async (req, res) => {

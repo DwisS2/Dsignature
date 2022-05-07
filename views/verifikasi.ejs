@@ -1,0 +1,77 @@
+<div id="__next">
+  <main>
+    <section
+      class="page__title-area page__title-height page__title-overlay d-flex align-items-center"
+      style="background-image:url(/img/page-title/page1.jpg)"
+    >
+      <div class="container">
+        <div class="row">
+          <div class="col-xxl-12">
+            <div class="page__title-wrapper mt-110">
+              <h3 class="page__title">Verification</h3>
+              <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                  <li class="breadcrumb-item">
+                    <a href="/home">Home</a>
+                  </li>
+                  <li class="breadcrumb-item active" aria-current="page">
+                    Verification
+                  </li>
+                </ol>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section class="cart-area pt-100 pb-100">
+      <div class="container">
+        <div class="row">
+          <div class="col-12">
+            <div class="hero__content p-relative z-index-1">
+              <h3 class="hero__title">
+                <span class="yellow-shape"
+                  >Verifikasi
+                  <img
+                    src="/img/shape/yellow-bg.png"
+                    alt="yellow-shape"
+                  /> </span
+                >Tanda Tangan Digital
+              </h3>
+              <form
+                method="post"
+                action="/hasilverifikasi2"
+                enctype="multipart/form-data"
+              >
+                <div class="file-upload">
+                  <div class="image-upload-wrap">
+                    <input
+                      class="file-upload-input"
+                      type="file"
+                      onchange="readURL(this);"
+                      accept="application/pdf"
+                      name="file"
+                      id="uploadpdf"
+                    />
+                    <div class="drag-text">
+                      <h3>Drag and drop a file or select add File PDF</h3>
+                    </div>
+                  </div>
+                  <div class="file-upload-content">
+                    <div class="image-title-wrap">
+                      <h3 class="image-title"></h3>
+                      <br />
+                      <button type="submit" value="upload" class="remove-image">
+                        Verifikasi
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>

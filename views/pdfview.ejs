@@ -1,0 +1,56 @@
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.3.1/jspdf.umd.min.js"></script>
+<script>
+  function initCanvas () {
+    var ctx = document.getElementById('pdf_renderer').getContext('2d')
+
+    ctx.canvas.addEventListener('mousemove', function (event) {
+      var mouseX = event.clientX - ctx.canvas.offsetLeft
+      var mouseY = event.clientY - ctx.canvas.offsetTop
+      var status = document.getElementById('status')
+      status.innerHTML = mouseX + ' | ' + mouseY
+    })
+    ctx.canvas.addEventListener('click', function (event) {
+      var mouseX = event.pageX - ctx.canvas.offsetLeft
+      var mouseY = event.pageY - ctx.canvas.offsetTop
+      // alert(mouseX+" | "+mouseY);
+      base_image = new Image()
+      base_image.src = '/img/logo/logo.png'
+      // ctx.fillStyle = 'orange'
+      // ctx.fillRect(mouseX - 15, mouseY - 15, 30, 30)
+      ctx.drawImage(base_image, mouseX - 15, mouseY - 15, 30, 30)
+      // console.log(mouseX - 15, mouseY - 15, 30, 30)
+    })
+  }
+  window.addEventListener('load', function (event) {
+    initCanvas()
+  })
+</script>
+
+<body>
+  <div id="my_pdf_viewer">
+    <div id="canvas_container">
+      <canvas id="pdf_renderer"></canvas>
+    </div>
+
+    <li>
+      <button id="openPDF">
+        <span>Open</span> <i class="fas fa-folder-open"></i>
+      </button>
+      <input type="file" id="inputFile" hidden />
+    </li>
+
+    <div id="navigation_controls">
+      <button id="go_previous">Previous</button>
+      <input id="current_page" value="1" type="number" />
+      <button id="go_next">Next</button>
+    </div>
+
+    <div id="zoom_controls">
+      <button id="zoom_in">+</button>
+      <button id="zoom_out">-</button>
+    </div>
+    <button id="unduh">
+      download
+    </button>
+  </div>
+</body>

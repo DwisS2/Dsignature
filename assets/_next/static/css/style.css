@@ -293,3 +293,9 @@ textarea {
 .pagination button {
   font-size: 1.5rem;
 }
+
+.btn-active-document {
+  background-color: #2b4eff;
+  color: white;
+  border-color: #2b4eff;
+}

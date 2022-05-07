@@ -1,0 +1,164 @@
+<div id="__next">
+  <main>
+    <section
+      class="page__title-area page__title-height page__title-overlay d-flex align-items-center"
+      style="background-image:url(assets/img/page-title/page1.jpg)"
+    >
+      <div class="container">
+        <div class="row">
+          <div class="col-xxl-12">
+            <div class="page__title-wrapper mt-110">
+              <h3 class="page__title">Document</h3>
+              <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                  <li class="breadcrumb-item">
+                    <a href="/home">Home</a>
+                  </li>
+                  <li class="breadcrumb-item active" aria-current="page">
+                    Document
+                  </li>
+                </ol>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section class="cart-area pt-100 pb-100">
+      <div class="container">
+        <% if (msg.length !== 0) { %>
+        <div class="alert alert-success" role="alert">
+          <%= msg %>
+        </div>
+        <% } %>
+        <div class="card">
+          <div class="card-header">
+            Information
+          </div>
+          <div class="card-body">
+            <blockquote class="blockquote mb-0">
+              <p>
+                All documents that you have uploaded are displayed on this page.
+              </p>
+            </blockquote>
+          </div>
+        </div>
+        <br />
+        <button
+          class="e-btn e-btn-border col-md-2.5 btn-active-document"
+          type="submit"
+        >
+          <a href="/document">
+            Uploaded Document
+          </a>
+        </button>
+        <button class="e-btn e-btn-border col-md-2" type="submit">
+          <a href="/document/signed_document">
+            Signed Document
+          </a>
+        </button>
+        <button class="e-btn e-btn-border col-md-2" type="submit">
+          <a href="/document/upload&sign">
+            Signature Request
+          </a>
+        </button>
+        <button class="e-btn e-btn-border col-md-2" type="submit">
+          <a href="/document/upload">
+            Upload Document
+          </a>
+        </button>
+        <button class="e-btn e-btn-border col-md-2" type="submit">
+          <a href="/document/upload&sign">
+            Upload & Sign
+          </a>
+        </button>
+        <div class="row">
+          <div class="col-12">
+            <form action="#">
+              <div class="table-content table-responsive">
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th class="product-thumbnail">No</th>
+
+                      <th class="cart-product-name">Document</th>
+                      <th class="product-price">Owner</th>
+                      <th class="product-quantity">Status</th>
+
+                      <th class="product-remove">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <% if (documents.length === 0) { %>
+                    <tr>
+                      <td colspan="5">
+                        <div class="alert alert-danger" role="alert">
+                          Dokumen masih kosong.
+                        </div>
+                      </td>
+                    </tr>
+                    <% } %> <% documents.forEach((document, i) => { i++ %>
+                    <tr>
+                      <td scope="row"><%= i++ %></td>
+
+                      <td><%= document.nm_document %></td>
+                      <td><%= document.id_user.name %></td>
+
+                      <td>
+                        <a class="badge-success"><%= document.status %></a>
+                      </td>
+                      <td>
+                        <form
+                          action="/document/download/<%= document._id %>"
+                          method="POST"
+                          class="d-inline"
+                        >
+                          <input
+                            type="hidden"
+                            name="_id"
+                            value="<%= document._id %>"
+                          />
+                          <button
+                            type="submit"
+                            class="btn btn-success badge rounded-pill"
+                          >
+                            <i class="bi bi-info-circle fa fa-download"></i>
+                            Download
+                          </button>
+                        </form>
+                        <a
+                          href="/signer/edit"
+                          class="btn btn-success badge rounded-pill"
+                          ><i class="bi bi-info-circle"></i> Edit</a
+                        >
+                        <form
+                          action="/document?_method=DELETE"
+                          method="POST"
+                          class="d-inline"
+                        >
+                          <input
+                            type="hidden"
+                            name="_id"
+                            value="<%= document._id %>"
+                          />
+                          <button
+                            type="submit"
+                            onclick="return confirm('yakin?')"
+                            class="btn btn-success badge rounded-pill"
+                          >
+                            <i class="bi bi-info-circle"></i> Delete
+                          </button>
+                        </form>
+                      </td>
+                    </tr>
+                    <% }) %>
+                  </tbody>
+                </table>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>

@@ -1,0 +1,110 @@
+<div id="__next">
+  <main>
+    <section
+      class="page__title-area page__title-height page__title-overlay d-flex align-items-center"
+      style="background-image:url(/img/page-title/page1.jpg)"
+    >
+      <div class="container">
+        <div class="row">
+          <div class="col-xxl-12">
+            <div class="page__title-wrapper mt-110">
+              <h3 class="page__title">Create Certificate</h3>
+              <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                  <li class="breadcrumb-item">
+                    <a href="/home">Home</a>
+                  </li>
+                  <li class="breadcrumb-item active" aria-current="page">
+                    Digital Signature Certificate
+                  </li>
+                  <li class="breadcrumb-item active" aria-current="page">
+                    Create Digital Signature Certificate
+                  </li>
+                </ol>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section class="cart-area pt-100 pb-100">
+      <div class="container">
+        <div class="card">
+          <div class="card-header">
+            Information
+          </div>
+          <div class="card-body">
+            <blockquote class="blockquote mb-0">
+              <p>
+                The certificate password is used every time you will sign a
+                document with this certificate. Please save this password
+                carefully because it cannot be reset.
+              </p>
+              <p>Password conditions</p>
+              <ul style="font-size: 14px; list-style: circle;">
+                <li>-> Minimum password length is 8 characters</li>
+                <li>-> Do not use the same password when the password login</li>
+              </ul>
+            </blockquote>
+          </div>
+        </div>
+        <br />
+        <div class="row">
+          <div class="col-12">
+            <div class="hero__content p-relative z-index-1">
+              <h3 class="hero__title">
+                <span class="yellow-shape">Create </span>Digital Signature
+                Certificate
+              </h3>
+              <br />
+              <form
+                method="post"
+                action="/digitalsignature/createcertificate"
+                enctype="multipart/form-data"
+              >
+                <div class="mb-3 row">
+                  <label for="staticEmail" class="col-sm-2 col-form-label"
+                    >Validity</label
+                  >
+                  <div class="sign__input col-sm-6">
+                    <input
+                      type="number"
+                      id="quantity"
+                      name="validity"
+                      min="1"
+                      max="999"
+                      placeholder="Days from now (ex: 365)"
+                      required
+                    />
+                    <i class="fa-solid fa-calendar-day"></i>
+                  </div>
+                </div>
+
+                <div class="mb-3 row">
+                  <label for="inputPassword" class="col-sm-2 col-form-label"
+                    >Password</label
+                  >
+                  <div class="sign__input mb-9 col-sm-6">
+                    <input
+                      type="password"
+                      name="password"
+                      placeholder="Password"
+                      minlength="8"
+                      required
+                    /><i class="fa fa-unlock-alt" aria-hidden="true"></i>
+                  </div>
+                </div>
+                <br />
+                <div class="btnbiru">
+                  <button type="submit" value="save" class="btn btn-primary">
+                    Save
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>

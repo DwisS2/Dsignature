@@ -1,0 +1,126 @@
+<!-- <script>
+  function initCanvas () {
+    var ctx = document.getElementById('my_canvas').getContext('2d')
+    ctx.canvas.addEventListener('mousemove', function (event) {
+      var mouseX = event.clientX - ctx.canvas.offsetLeft
+      var mouseY = event.clientY - ctx.canvas.offsetTop
+      var status = document.getElementById('status')
+      status.innerHTML = mouseX + ' | ' + mouseY
+    })
+    ctx.canvas.addEventListener('click', function (event) {
+      var mouseX = event.pageX - ctx.canvas.offsetLeft
+      var mouseY = event.pageY - ctx.canvas.offsetTop
+      // alert(mouseX+" | "+mouseY);
+      ctx.fillStyle = 'orange'
+      ctx.fillRect(mouseX - 15, mouseY - 15, 30, 30)
+    })
+  }
+  window.addEventListener('load', function (event) {
+    initCanvas()
+  })
+</script> -->
+
+<div id="__next">
+  <main>
+    <section
+      class="page__title-area page__title-height page__title-overlay d-flex align-items-center"
+      style="background-image:url(/img/page-title/page1.jpg)"
+    >
+      <div class="container">
+        <div class="row">
+          <div class="col-xxl-12">
+            <div class="page__title-wrapper mt-110">
+              <h3 class="page__title">Upload & Sign Document</h3>
+              <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                  <li class="breadcrumb-item">
+                    <a href="/home">Home</a>
+                  </li>
+                  <li class="breadcrumb-item active" aria-current="page">
+                    Document
+                  </li>
+                  <li class="breadcrumb-item active" aria-current="page">
+                    Upload & Sign
+                  </li>
+                </ol>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section class="cart-area pt-100 pb-100">
+      <div class="container">
+        <div class="containeruploadsign">
+          <% if (msg.length !== 0) { %>
+          <div class="alert alert-success" role="alert">
+            <%= msg %>
+          </div>
+          <% } %>
+          <div class="card">
+            <div class="card-header">
+              Information
+            </div>
+            <div class="card-body">
+              <blockquote class="blockquote mb-0">
+                <p>
+                  Upload PDF documents and request signatures from others
+                </p>
+              </blockquote>
+            </div>
+          </div>
+          <br />
+          <br />
+          <br />
+          <div class="row">
+            <div class="col-12">
+              <div class="hero__content p-relative z-index-1">
+                <h3 class="hero__title">
+                  <span class="yellow-shape"
+                    >Upload
+                    <img
+                      src="/img/shape/yellow-bg.png"
+                      alt="yellow-shape"
+                    /> </span
+                  >Document
+                </h3>
+
+                <br />
+                <form
+                  method="post"
+                  action="/document/upload&sign"
+                  enctype="multipart/form-data"
+                >
+                  <div class="mb-3 row">
+                    <label for="staticEmail" class="col-sm-2 col-form-label"
+                      >Dokument (PDF)</label
+                    >
+                    <div class="col-sm-6">
+                      <input
+                        type="file"
+                        name="document"
+                        placeholder="document"
+                        id="document"
+                      />
+                    </div>
+                  </div>
+
+                  <br />
+                  <div class="btnbiru">
+                    <button
+                      type="submit"
+                      value="upload"
+                      class="btn btn-primary"
+                    >
+                      Next
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>

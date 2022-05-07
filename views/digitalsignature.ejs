@@ -1,0 +1,129 @@
+<div id="__next">
+  <main>
+    <section
+      class="page__title-area page__title-height page__title-overlay d-flex align-items-center"
+      style="background-image:url(/img/page-title/page1.jpg)"
+    >
+      <div class="container">
+        <div class="row">
+          <div class="col-xxl-12">
+            <div class="page__title-wrapper mt-110">
+              <h3 class="page__title">Digital Certificate</h3>
+              <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                  <li class="breadcrumb-item">
+                    <a href="/home">Home</a>
+                  </li>
+                  <li class="breadcrumb-item active" aria-current="page">
+                    Digital Certificate
+                  </li>
+                </ol>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section class="cart-area pt-100 pb-100">
+      <div class="container">
+        <% if (msg.length !== 0) { %>
+        <div class="alert alert-success" role="alert">
+          <%= msg %>
+        </div>
+        <% } %>
+        <div class="card">
+          <div class="card-header">
+            Information
+          </div>
+          <div class="card-body">
+            <blockquote class="blockquote mb-0">
+              <p>
+                A digital certificate is your identity in the system for
+                creating a digital signature. You can only have one active
+                certificate at a time.
+              </p>
+            </blockquote>
+          </div>
+        </div>
+        <br />
+        <% if (certificates.length != 0) { %>
+        <button class="e-btn e-btn-border col-md-2" type="submit" hidden>
+          <a href="/digitalcertificate/createcertificate">
+            Create Certificate
+          </a>
+        </button>
+        <% } else { %>
+        <button class="e-btn e-btn-border col-md-2" type="submit">
+          <a href="/digitalcertificate/createcertificate">
+            Create Certificate
+          </a>
+        </button>
+        <% } %>
+        <div class="row">
+          <div class="col-12">
+            <form action="#">
+              <div class="table-content table-responsive">
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th scope="col" class="product-thumbnail">No</th>
+                      <th scope="col" class="product-thumbnail">
+                        Serial Number
+                      </th>
+                      <th scope="col" class="product-thumbnail">Name</th>
+                      <th scope="col" class="cart-product-name">Validity</th>
+                      <th scope="col" class="product-price">Status</th>
+                      <th scope="col" class="product-quantity">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <% if (certificates.length === 0) { %>
+                    <tr>
+                      <td colspan="6">
+                        <div class="alert alert-danger" role="alert">
+                          Certificate is still empty.
+                        </div>
+                      </td>
+                    </tr>
+
+                    <% } %> <% certificates.forEach((certificate, i) => { i++ %>
+                    <tr>
+                      <td scope="row"><%= i++ %></td>
+                      <td><%= certificate.serialnumber %></td>
+                      <td><%= certificate.name %></td>
+                      <td><%= certificate.validity %></td>
+                      <td>
+                        <a class="badge-success"><%= certificate.status %></a>
+                      </td>
+                      <td>
+                        <form
+                          action="/certificate?_method=DELETE"
+                          method="POST"
+                          class="d-inline"
+                        >
+                          <input
+                            type="hidden"
+                            name="_id"
+                            value="<%= certificate._id %>"
+                          />
+                          <button
+                            type="submit"
+                            onclick="return confirm('yakin?')"
+                            class="btn btn-success badge rounded-pill"
+                          >
+                            <i class="bi bi-info-circle"></i> delete
+                          </button>
+                        </form>
+                      </td>
+                    </tr>
+                    <% }) %>
+                  </tbody>
+                </table>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>

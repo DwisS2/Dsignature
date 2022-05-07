@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="stylesheet"
+      href="/_next/static/css/stylepdf.css"
+      type="text/css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+      integrity="sha512-iBBXm8fW90+nuLcSKlbmrPcLa0OT92xO1BIsZ+ywDWZCvqsWgccV3gFoRBv0z+8dLJgyAHIhR35VZc2oM/gI1w=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.9.359/pdf.min.js"
+      integrity="sha512-U5C477Z8VvmbYAoV4HDq17tf4wG6HXPC6/KM9+0/wEXQQ13gmKY2Zb0Z2vu0VNUWch4GlJ+Tl/dfoLOH4i2msw=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+    <script>
+      function initCanvas () {
+        var ctx = document.getElementById('my_canvas').getContext('2d')
+        ctx.canvas.addEventListener('mousemove', function (event) {
+          var mouseX = event.clientX - ctx.canvas.offsetLeft
+          var mouseY = event.clientY - ctx.canvas.offsetTop
+          var status = document.getElementById('status')
+          status.innerHTML = mouseX + ' | ' + mouseY
+        })
+        ctx.canvas.addEventListener('click', function (event) {
+          var mouseX = event.pageX - ctx.canvas.offsetLeft
+          var mouseY = event.pageY - ctx.canvas.offsetTop
+          // alert(mouseX+" | "+mouseY);
+          ctx.fillStyle = 'orange'
+          ctx.fillRect(mouseX - 15, mouseY - 15, 30, 30)
+        })
+      }
+      window.addEventListener('load', function (event) {
+        initCanvas()
+      })
+    </script>
+    <title>PDF Viewer</title>
+  </head>
+  <body>
+    <div><%- body %></div>
+
+    <footer>
+      <ul>
+        <li>
+          <button id="openPDF">
+            <span>Apply signature</span> <i class="fas fa-folder-open"></i>
+          </button>
+          <input type="file" id="inputFile" hidden />
+        </li>
+        <li class="pagination">
+          <button id="previous">
+            <i class="fas fa-arrow-alt-circle-left"></i>
+          </button>
+          <span id="current_page">0 of 0</span>
+          <button id="next">
+            <i class="fas fa-arrow-alt-circle-right"></i>
+          </button>
+        </li>
+
+        <li>
+          <span id="zoomValue">150%</span>
+          <input
+            type="range"
+            id="zoom"
+            name="cowbell"
+            min="100"
+            max="300"
+            value="150"
+            step="50"
+            disabled
+          />
+        </li>
+      </ul>
+    </footer>
+    <script
+      type="text/javascript"
+      src="/_next/static/chunks/uploadpdf.js"
+    ></script>
+  </body>
+</html>

@@ -32,6 +32,21 @@ function render () {
   })
 }
 
+const canvas = document.getElementById('pdf_renderer')
+const download = document.getElementById('unduh')
+const context = canvas.getContext('2d')
+const { jsPDF } = window.jspdf
+const pdf = new jsPDF()
+download.addEventListener(
+  'click',
+  () => {
+    const imgData = canvas.toDataURL('image/png', 1.0)
+    pdf.addImage(imgData, 'PNG', 0, 0)
+    pdf.save('download.pdf')
+  },
+  false
+)
+
 document.getElementById('go_previous').addEventListener('click', e => {
   if (myState.pdf == null || myState.currentPage == 1) return
   myState.currentPage -= 1

@@ -1,0 +1,179 @@
+<div id="__next">
+  <main>
+    <section
+      class="page__title-area page__title-height page__title-overlay d-flex align-items-center"
+      style="background-image:url(/img/page-title/page1.jpg)"
+    >
+      <div class="container">
+        <div class="row">
+          <div class="col-xxl-12">
+            <div class="page__title-wrapper mt-110">
+              <h3 class="page__title">Signature</h3>
+              <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                  <li class="breadcrumb-item">
+                    <a href="/home">Home</a>
+                  </li>
+                  <li class="breadcrumb-item active" aria-current="page">
+                    Signature
+                  </li>
+                </ol>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section class="cart-area pt-100 pb-100">
+      <div class="container">
+        <% if (msg.length !== 0) { %>
+        <div class="alert alert-success" role="alert">
+          <%= msg %>
+        </div>
+        <% } %>
+        <div class="card">
+          <div class="card-header">
+            Information
+          </div>
+          <div class="card-body">
+            <blockquote class="blockquote mb-0">
+              <p>
+                You can only have one active signature at a time.
+              </p>
+            </blockquote>
+          </div>
+        </div>
+        <br />
+
+        <div class="col-12">
+          <% if (signatures.length === 0) { %>
+          <div class="card">
+            <h5 class="card-header">Signature</h5>
+            <div class="card-body">
+              <p class="card-text">
+                You don't have a signature image yet. Please upload or draw a
+                signature in the form below.
+              </p>
+
+              <p>
+                <a
+                  class="btn btn-primary"
+                  data-toggle="collapse"
+                  href="#collapseExample"
+                  role="button"
+                  aria-expanded="false"
+                  aria-controls="collapseExample"
+                >
+                  Upload
+                </a>
+                <a
+                  class="btn btn-primary"
+                  role="button"
+                  data-toggle="collapse"
+                  data-target="#collapseExample2"
+                  aria-expanded="false"
+                  aria-controls="collapseExample2"
+                >
+                  Draw
+                </a>
+              </p>
+              <div class="collapse" id="collapseExample">
+                <form
+                  method="post"
+                  action="/signature"
+                  enctype="multipart/form-data"
+                >
+                  <div class="file-upload">
+                    <div class="image-upload-wrap col-md-6">
+                      <input
+                        class="file-upload-input"
+                        type="file"
+                        name="file"
+                        onchange="readURL2(this);"
+                        accept="image/*"
+                      />
+                      <div class="drag-text">
+                        <h3>Drag and drop a file or select add Image</h3>
+                      </div>
+                    </div>
+                    <div class="file-upload-content">
+                      <img class="file-upload-image" src="#" alt="your image" />
+                      <div class="image-title-wrap">
+                        <button
+                          type="button"
+                          onclick="removeUpload2()"
+                          class="btn btn-danger"
+                        >
+                          Remove
+                          <span class="image-title">Uploaded Image</span>
+                        </button>
+                      </div>
+                    </div>
+                    <br />
+                    <button
+                      type="submit"
+                      value="upload"
+                      class="btn btn-primary"
+                    >
+                      Save
+                    </button>
+                  </div>
+                </form>
+              </div>
+
+              <div class="collapse" id="collapseExample2">
+                <form id="form-submit" method="POST" action="/signature2">
+                  <input
+                    type="hidden"
+                    name="signature2"
+                    id="signature-result"
+                  />
+                  <div class="wrapper">
+                    <canvas
+                      id="signature-pad"
+                      class="signature-pad"
+                      width="400"
+                      height="200"
+                    ></canvas>
+                  </div>
+                  <button id="clear" class="btn btn-secondary">
+                    Clear
+                  </button>
+                  <button type="submit" id="save" class="btn btn-success">
+                    Save
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          <% } else { %>
+          <div class="card w-50">
+            <% signatures.forEach(function(signature) { %>
+            <h5 class="card-header">Saved Signature Image</h5>
+            <div class="card-body">
+              <img class="card-img-top" src="<%=signature.img%>" />
+
+              <form
+                action="/signature?_method=DELETE"
+                method="POST"
+                class="d-inline"
+              >
+                <input type="hidden" name="_id" value="<%= signature._id %>" />
+                <button
+                  type="submit"
+                  onclick="return confirm('yakin?')"
+                  class="btn btn-primary"
+                >
+                  <i class="bi bi-info-circle"></i> delete
+                </button>
+              </form>
+              <% }) %>
+            </div>
+          </div>
+          <% } %>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
