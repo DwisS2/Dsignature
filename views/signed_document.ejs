@@ -58,7 +58,7 @@
           </a>
         </button>
         <button class="e-btn e-btn-border col-md-2" type="submit">
-          <a href="/document/upload&sign">
+          <a href="/document/signature_request">
             Signature Request
           </a>
         </button>
@@ -92,34 +92,34 @@
                     </tr>
                   </thead>
                   <tbody>
-                    <% if (documents.length === 0) { %>
+                    <% if (requests.length === 0) { %>
                     <tr>
-                      <td colspan="5">
+                      <td colspan="7">
                         <div class="alert alert-danger" role="alert">
-                          Dokumen masih kosong.
+                          Document is still empty.
                         </div>
                       </td>
                     </tr>
-                    <% } %> <% documents.forEach((document, i) => { i++ %>
+                    <% } %> <% requests.forEach((request, i) => { i++ %>
                     <tr>
                       <td scope="row"><%= i++ %></td>
 
-                      <td><%= document.nm_document %></td>
-                      <td><%= document.id_user.name %></td>
-                      <td><%= document.timeCreated %></td>
-                      <td><%= document.timeSigned %></td>
+                      <td><%= request.id_document.nm_document %></td>
+                      <td><%= request.id_user.name %></td>
+                      <td><%= request.id_document.timeCreated %></td>
+                      <td><%= request.id_document.timeSigned %></td>
 
-                      <td><%= document.certificate_number %></td>
+                      <td><%= request.certificate_number %></td>
                       <td>
                         <form
-                          action="/document/download/<%= document._id %>"
+                          action="/document/download/<%= request.id_document._id %>"
                           method="POST"
                           class="d-inline"
                         >
                           <input
                             type="hidden"
                             name="_id"
-                            value="<%= document._id %>"
+                            value="<%= request.id_document._id %>"
                           />
                           <button
                             type="submit"

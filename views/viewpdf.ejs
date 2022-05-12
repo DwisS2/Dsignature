@@ -156,13 +156,10 @@
         </button>
       </div>
       <div class="tool">
-        <form
-          method="post"
-          action="/savepdfsign?_method=put"
-          enctype="multipart/form-data"
-        >
+        <form method="post" action="/savepdfsign?_method=put">
           <input type="hidden" name="_id" value="<%= document._id %>" />
           <input type="hidden" name="pdfbase64" id="pdfresult" />
+
           <button class="btn btn-light btn-sm" onclick="savePDF()">
             <i class="fa fa-save"></i> Save Signature
           </button>

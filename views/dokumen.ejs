@@ -58,7 +58,7 @@
           </a>
         </button>
         <button class="e-btn e-btn-border col-md-2" type="submit">
-          <a href="/document/upload&sign">
+          <a href="/document/signature_request">
             Signature Request
           </a>
         </button>
@@ -82,41 +82,55 @@
                       <th class="product-thumbnail">No</th>
 
                       <th class="cart-product-name">Document</th>
-                      <th class="product-price">Owner</th>
-                      <th class="product-quantity">Status</th>
+                      <th class="product-price">Upload</th>
+                      <th class="product-quantity">Signed</th>
 
                       <th class="product-remove">Action</th>
                     </tr>
                   </thead>
                   <tbody>
-                    <% if (documents.length === 0) { %>
+                    <% if (requests.length === 0) { %>
                     <tr>
                       <td colspan="5">
                         <div class="alert alert-danger" role="alert">
-                          Dokumen masih kosong.
+                          Document is still empty.
                         </div>
                       </td>
                     </tr>
-                    <% } %> <% documents.forEach((document, i) => { i++ %>
+                    <% } %> <% requests.forEach((request, i) => { i++ %>
                     <tr>
                       <td scope="row"><%= i++ %></td>
 
-                      <td><%= document.nm_document %></td>
-                      <td><%= document.id_user.name %></td>
+                      <td><%= request.id_document.nm_document %></td>
+                      <td><%= request.id_document.timeCreated %></td>
 
                       <td>
-                        <a class="badge-success"><%= document.status %></a>
+                        <a class="badge-success"
+                          ><div class="progress" id="progress-bar">
+                            <div
+                              class="progress-bar"
+                              role="progressbar"
+                              style="width:<%= 100/(request.id_document.totalsigner/request.id_document.alreadysigned) %>%"
+                              aria-valuenow="<%= request.id_document.alreadysigned %>"
+                              aria-valuemin="0"
+                              aria-valuemax="<%= request.id_document.totalsigner %>"
+                            >
+                              <%= request.id_document.alreadysigned %> / <%=
+                              request.id_document.totalsigner %>
+                            </div>
+                          </div></a
+                        >
                       </td>
                       <td>
                         <form
-                          action="/document/download/<%= document._id %>"
+                          action="/document/download/<%= request.id_document._id %>"
                           method="POST"
                           class="d-inline"
                         >
                           <input
                             type="hidden"
                             name="_id"
-                            value="<%= document._id %>"
+                            value="<%= request.id_document._id %>"
                           />
                           <button
                             type="submit"
@@ -139,7 +153,7 @@
                           <input
                             type="hidden"
                             name="_id"
-                            value="<%= document._id %>"
+                            value="<%= request.id_document._id %>"
                           />
                           <button
                             type="submit"
@@ -151,6 +165,7 @@
                         </form>
                       </td>
                     </tr>
+
                     <% }) %>
                   </tbody>
                 </table>

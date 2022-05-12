@@ -1,0 +1,303 @@
+<div id="__next">
+  <main>
+    <section
+      class="page__title-area page__title-height page__title-overlay d-flex align-items-center"
+      style="background-image:url(assets/img/page-title/page1.jpg)"
+    >
+      <div class="container">
+        <div class="row">
+          <div class="col-xxl-12">
+            <div class="page__title-wrapper mt-110">
+              <h3 class="page__title">Signature Request</h3>
+              <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                  <li class="breadcrumb-item">
+                    <a href="/home">Home</a>
+                  </li>
+                  <li class="breadcrumb-item active" aria-current="page">
+                    Signature Request
+                  </li>
+                </ol>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section class="cart-area pt-100 pb-100">
+      <div class="container">
+        <% if (msg.length !== 0) { %>
+        <div class="alert alert-success" role="alert">
+          <%= msg %>
+        </div>
+        <% } %>
+        <div class="card">
+          <div class="card-header">
+            Information
+          </div>
+          <div class="card-body">
+            <blockquote class="blockquote mb-0">
+              <p>
+                The following is a list of documents that you need to sign. You
+                have to do approval in advance to be able to start signing
+                documents.
+              </p>
+            </blockquote>
+          </div>
+        </div>
+        <br />
+        <button class="e-btn e-btn-border col-md-2.5" type="submit">
+          <a href="/document">
+            Uploaded Document
+          </a>
+        </button>
+        <button class="e-btn e-btn-border col-md-2 " type="submit">
+          <a href="/document/signed_document">
+            Signed Document
+          </a>
+        </button>
+        <button
+          class="e-btn e-btn-border col-md-2 btn-active-document"
+          type="submit"
+        >
+          <a href="/document/signature_request">
+            Signature Request
+          </a>
+        </button>
+        <button class="e-btn e-btn-border col-md-2" type="submit">
+          <a href="/document/upload">
+            Upload Document
+          </a>
+        </button>
+        <button class="e-btn e-btn-border col-md-2" type="submit">
+          <a href="/document/upload&sign">
+            Upload & Sign
+          </a>
+        </button>
+        <div class="row">
+          <div class="col-12">
+            <!-- <form action="#"> -->
+            <div class="table-content table-responsive">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th class="product-thumbnail">No</th>
+
+                    <th class="cart-product-name">Document</th>
+                    <th class="product-price">Upload</th>
+                    <th class="cart-product-name">Status</th>
+                    <th class="cart-product-name"></th>
+
+                    <th class="product-remove">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% if (requests.length === 0) { %>
+                  <tr>
+                    <td colspan="6">
+                      <div class="alert alert-danger" role="alert">
+                        Document is still empty.
+                      </div>
+                    </td>
+                  </tr>
+                  <% } %> <% requests.forEach((request, i) => { i++ %>
+                  <tr>
+                    <td scope="row"><%= i++ %></td>
+
+                    <td>
+                      <%= request.id_document.nm_document, request.email %>
+                    </td>
+                    <td><%= request.id_document.timeCreated %></td>
+                    <% if (request.status == 'signed') { %>
+                    <td>
+                      <a class="btn-success badge rounded-pill"
+                        ><i class="bi bi-info-circle"></i>Signed</a
+                      >
+                    </td>
+                    <td>
+                      <a
+                        href="/signer/edit"
+                        class="btn btn-success badge rounded-pill"
+                        ><i class="bi bi-info-circle"></i> Detail</a
+                      >
+                    </td>
+                    <td>
+                      <form
+                        action="/document/signature_request/download/<%= request.id_document._id %>"
+                        method="POST"
+                        class="d-inline"
+                      >
+                        <input
+                          type="hidden"
+                          name="_id"
+                          value="<%= request.id_document._id %>"
+                        />
+                        <button
+                          type="submit"
+                          class="btn btn-success badge rounded-pill"
+                        >
+                          <i class="bi bi-info-circle fa fa-download"></i>
+                          Download
+                        </button>
+                      </form>
+                    </td>
+                    <% } else if (request.agree > 0) { %>
+                    <td>
+                      <a class="btn-success badge rounded-pill"
+                        ><i class="bi bi-info-circle"></i>Agree</a
+                      >
+                    </td>
+                    <td>
+                      <a
+                        href="/signer/edit"
+                        class="btn btn-success badge rounded-pill"
+                        ><i class="bi bi-info-circle"></i> Detail</a
+                      >
+                    </td>
+                    <td>
+                      <button
+                        type="button"
+                        class="btn btn-success badge rounded-pill modalclick"
+                        data-toggle="modal"
+                        data-target="#document<%= request.id_document._id %>"
+                        data-id="<%= request.id_document._id %>"
+                      >
+                        Sign
+                      </button>
+                    </td>
+                    <% } else { %>
+
+                    <td>
+                      <form></form>
+                      <form
+                        action="/document/signature_request/agree/<%= request._id %>"
+                        method="POST"
+                        class="d-inline"
+                      >
+                        <button
+                          type="submit"
+                          class="btn btn-success badge rounded-pill"
+                        >
+                          No response yet
+                        </button>
+                      </form>
+                      <form
+                        action="/document/signature_request/rejected/<%= request._id %>"
+                        method="POST"
+                        class="d-inline"
+                      >
+                        <button
+                          type="submit"
+                          class="btn btn-success badge rounded-pill"
+                        >
+                          Rejected
+                        </button>
+                      </form>
+                    </td>
+                    <% } %>
+                  </tr>
+                  <!-- Modal -->
+                  <div
+                    class="modal fade"
+                    id="document<%= request.id_document._id %>"
+                    tabindex="-1"
+                    role="dialog"
+                    aria-labelledby="exampleModalLabel"
+                    aria-hidden="true"
+                  >
+                    <div class="modal-dialog" role="document">
+                      <div class="modal-content">
+                        <div class="modal-header">
+                          <h5 class="modal-title" id="exampleModalLabel">
+                            Input a Password
+                          </h5>
+                          <button
+                            type="button"
+                            class="close bg-transparent"
+                            data-dismiss="modal"
+                            aria-label="Close"
+                          >
+                            <span aria-hidden="true">&times;</span>
+                          </button>
+                        </div>
+                        <form
+                          action="/document/signature_request/sign"
+                          method="post"
+                          enctype="multipart/form-data"
+                        >
+                          <input type="text" name="id" id="iddoc" hidden />
+                          <div class="modal-body">
+                            <div class="mb-3 row">
+                              <label
+                                for="staticEmail"
+                                class="col-sm-4 col-form-label"
+                                >Digital Certificate</label
+                              >
+                              <div class="col-sm-6">
+                                <input
+                                  type="text"
+                                  readonly
+                                  class="form-control-plaintext"
+                                  id="serialnumber"
+                                  value="<%= certificate[0].serialnumber %>"
+                                  name="serialnumber"
+                                />
+                              </div>
+                            </div>
+
+                            <div class="mb-3 row">
+                              <label
+                                for="staticEmail"
+                                class="col-sm-4 col-form-label"
+                                >Password</label
+                              >
+                              <div class="col-sm-6">
+                                <input
+                                  type="password"
+                                  placeholder="Enter the password you used to create a digital certificate"
+                                  minlength="8"
+                                  class="form-control"
+                                  name="password"
+                                />
+                              </div>
+                            </div>
+                          </div>
+
+                          <div class="modal-footer">
+                            <button
+                              type="button"
+                              class="btn btn-secondary"
+                              data-dismiss="modal"
+                            >
+                              Close
+                            </button>
+                            <button
+                              type="submit"
+                              class="btn btn-primary"
+                              id="submit-request"
+                            >
+                              Submit
+                            </button>
+                          </div>
+                        </form>
+                      </div>
+                    </div>
+                  </div>
+
+                  <% }) %>
+                </tbody>
+              </table>
+            </div>
+            <!-- </form> -->
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+<script type="text/javascript">
+  $('.modalclick').click(function () {
+    var passedID = $(this).data('id') //get the id of the selected button
+    $('#iddoc').val(passedID) //set the id to the input on the modal
+  })
+</script>

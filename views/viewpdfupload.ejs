@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Digital Signature</title>
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+      integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh"
+      crossorigin="anonymous"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.min.css"
+    />
+    <style>
+      body {
+        background-color: rgb(82, 86, 89);
+      }
+
+      canvas,
+      .canvas-container {
+        -webkit-box-shadow: 10px 10px 5px 0px rgba(0, 0, 0, 0.75);
+        -moz-box-shadow: 10px 10px 5px 0px rgba(0, 0, 0, 0.75);
+        box-shadow: 10px 10px 5px 0px rgba(0, 0, 0, 0.75);
+      }
+
+      .toolbar {
+        width: 100%;
+        background-color: rgb(50, 54, 57);
+        height: 50px;
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 10;
+      }
+
+      #pdf-container {
+        margin-top: 60px;
+        padding-left: 10px;
+        text-align: center;
+      }
+
+      button:focus {
+        outline: 0;
+      }
+
+      .toolbar .tool {
+        display: inline-block;
+        color: #fff;
+        height: 100%;
+        padding-top: 10px;
+        padding-left: 10px;
+        margin-right: 5px;
+      }
+
+      .toolbar .tool label,
+      .toolbar .tool select,
+      .toolbar .tool input {
+        display: inline-block;
+        width: auto;
+        height: auto !important;
+        padding: 0;
+      }
+
+      .toolbar .tool input {
+        width: 50px;
+      }
+
+      .toolbar .tool .color-tool {
+        height: 25px;
+        width: 25px;
+        border-radius: 25px;
+        border: 0;
+        cursor: pointer;
+        display: inline-block;
+      }
+
+      .toolbar .tool .color-tool.active {
+        -webkit-box-shadow: 3px 4px 5px 0px rgba(0, 0, 0, 0.75);
+        -moz-box-shadow: 3px 4px 5px 0px rgba(0, 0, 0, 0.75);
+        box-shadow: 3px 4px 5px 0px rgba(0, 0, 0, 0.75);
+      }
+
+      .toolbar .tool:nth-last-child(1) {
+        float: right;
+      }
+
+      .toolbar .tool .tool-button {
+        background-color: rgb(50, 54, 57);
+        border: 1px solid rgb(50, 54, 57);
+        color: #fff;
+        cursor: pointer;
+      }
+
+      .toolbar .tool .tool-button:hover,
+      .toolbar .tool .tool-button.active {
+        background-color: rgb(82, 86, 89);
+        border-color: rgb(82, 86, 89);
+      }
+    </style>
+    <style>
+      canvas,
+      .canvas-container {
+        margin-bottom: 25px;
+      }
+
+      .canvas-container {
+        margin-left: auto;
+        margin-right: auto;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="toolbar">
+      <div class="tool">
+        <span>Add Signature</span>
+      </div>
+
+      <div class="tool">
+        <button class="tool-button">
+          <i
+            class="fa fa-picture-o"
+            title="Add an Image"
+            onclick="addImage(event)"
+          >
+            Signature</i
+          >
+        </button>
+      </div>
+      <div class="tool">
+        <button class="tool-button">
+          <i
+            class="fa fa-qrcode"
+            title="Add an Image"
+            onclick="addImage(event)"
+          >
+            QRCode</i
+          >
+        </button>
+      </div>
+      <div class="tool">
+        <button
+          class="btn btn-danger btn-sm"
+          onclick="deleteSelectedObject(event)"
+        >
+          <i class="fa fa-trash"></i>
+        </button>
+      </div>
+      <div class="tool">
+        <button class="btn btn-danger btn-sm" onclick="clearPage()">
+          Clear Page
+        </button>
+      </div>
+      <div class="tool">
+        <form method="post" action="/savepdfsign2?_method=put">
+          <input type="hidden" name="_id" value="<%= document._id %>" />
+          <input type="hidden" name="pdfbase64" id="pdfresult" />
+          <button class="btn btn-light btn-sm" onclick="savePDF()">
+            <i class="fa fa-save"></i> Save Signature
+          </button>
+        </form>
+      </div>
+    </div>
+    <div id="pdf-container"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"
+      integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"
+      integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV"
+      crossorigin="anonymous"
+    ></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.6.347/pdf.min.js"></script>
+    <script>
+      pdfjsLib.GlobalWorkerOptions.workerSrc =
+        'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.6.347/pdf.worker.min.js'
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/4.3.0/fabric.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.2.0/jspdf.umd.min.js"></script>
+
+    <script>
+      /**
+       * PDFAnnotate v1.0.1
+       * Author: Ravisha Heshan
+       */
+
+      var PDFAnnotate = function (container_id, url, options = {}) {
+        this.number_of_pages = 0
+        this.pages_rendered = 0
+        this.active_tool = 1 // 1 - Free hand, 2 - Text, 3 - Arrow, 4 - Rectangle
+        this.fabricObjects = []
+        this.fabricObjectsData = []
+        this.color = '#212121'
+        this.borderColor = '#000000'
+        this.borderSize = 1
+        this.font_size = 16
+        this.active_canvas = 0
+        this.container_id = container_id
+        this.url = url
+        this.pageImageCompression = options.pageImageCompression
+          ? options.pageImageCompression.toUpperCase()
+          : 'NONE'
+        var inst = this
+
+        var loadingTask = pdfjsLib.getDocument(this.url)
+        loadingTask.promise.then(
+          function (pdf) {
+            var scale = options.scale ? options.scale : 1.3
+            inst.number_of_pages = pdf.numPages
+
+            for (var i = 1; i <= pdf.numPages; i++) {
+              pdf.getPage(i).then(function (page) {
+                var viewport = page.getViewport({ scale: scale })
+                var canvas = document.createElement('canvas')
+                document.getElementById(inst.container_id).appendChild(canvas)
+                canvas.className = 'pdf-canvas'
+                canvas.height = viewport.height
+                canvas.width = viewport.width
+                context = canvas.getContext('2d')
+
+                var renderContext = {
+                  canvasContext: context,
+                  viewport: viewport
+                }
+                var renderTask = page.render(renderContext)
+                renderTask.promise.then(function () {
+                  $('.pdf-canvas').each(function (index, el) {
+                    $(el).attr('id', 'page-' + (index + 1) + '-canvas')
+                  })
+                  inst.pages_rendered++
+                  if (inst.pages_rendered == inst.number_of_pages)
+                    inst.initFabric()
+                })
+              })
+            }
+          },
+          function (reason) {
+            console.error(reason)
+          }
+        )
+
+        this.initFabric = function () {
+          var inst = this
+          let canvases = $('#' + inst.container_id + ' canvas')
+          canvases.each(function (index, el) {
+            var background = el.toDataURL('image/png')
+            var fabricObj = new fabric.Canvas(el.id, {
+              freeDrawingBrush: {
+                width: 1,
+                color: inst.color
+              }
+            })
+            inst.fabricObjects.push(fabricObj)
+            if (typeof options.onPageUpdated == 'function') {
+              fabricObj.on('object:added', function () {
+                var oldValue = Object.assign({}, inst.fabricObjectsData[index])
+                inst.fabricObjectsData[index] = fabricObj.toJSON()
+                options.onPageUpdated(
+                  index + 1,
+                  oldValue,
+                  inst.fabricObjectsData[index]
+                )
+              })
+            }
+
+            fabricObj.setBackgroundImage(
+              background,
+              fabricObj.renderAll.bind(fabricObj)
+            )
+            $(fabricObj.upperCanvasEl).click(function (event) {
+              inst.active_canvas = index
+              inst.fabricClickHandler(event, fabricObj)
+            })
+            fabricObj.on('after:render', function () {
+              inst.fabricObjectsData[index] = fabricObj.toJSON()
+              fabricObj.off('after:render')
+            })
+
+            if (
+              index === canvases.length - 1 &&
+              typeof options.ready === 'function'
+            ) {
+              options.ready()
+            }
+          })
+        }
+
+        this.fabricClickHandler = function (event, fabricObj) {
+          var inst = this
+          if (inst.active_tool == 2) {
+            var text = new fabric.IText('Sample text', {
+              left:
+                event.clientX -
+                fabricObj.upperCanvasEl.getBoundingClientRect().left,
+              top:
+                event.clientY -
+                fabricObj.upperCanvasEl.getBoundingClientRect().top,
+              fill: inst.color,
+              fontSize: inst.font_size,
+              selectable: true
+            })
+            fabricObj.add(text)
+            inst.active_tool = 0
+          }
+        }
+      }
+
+      PDFAnnotate.prototype.enableSelector = function () {
+        var inst = this
+        inst.active_tool = 0
+        if (inst.fabricObjects.length > 0) {
+          $.each(inst.fabricObjects, function (index, fabricObj) {
+            fabricObj.isDrawingMode = false
+          })
+        }
+      }
+
+      PDFAnnotate.prototype.addImageToCanvas = function () {
+        var inst = this
+        var fabricObj = inst.fabricObjects[inst.active_canvas]
+        inst.active_tool = 4
+        if (inst.fabricObjects.length > 0) {
+          $.each(inst.fabricObjects, function (index, fabricObj) {
+            fabricObj.isDrawingMode = false
+          })
+        }
+        fabric.Image.fromURL(`<%= signature.img %>`, function (myImg) {
+          var img1 = myImg.set({ left: 0, top: 0 })
+          // canvas.add(img1)
+          fabricObj.add(img1)
+        })
+      }
+
+      PDFAnnotate.prototype.deleteSelectedObject = function () {
+        var inst = this
+        var activeObject = inst.fabricObjects[
+          inst.active_canvas
+        ].getActiveObject()
+        if (activeObject) {
+          if (confirm('Are you sure ?'))
+            inst.fabricObjects[inst.active_canvas].remove(activeObject)
+        }
+      }
+
+      PDFAnnotate.prototype.savePdf = function (fileName) {
+        var inst = this
+        var doc = new jspdf.jsPDF()
+        if (typeof fileName === 'undefined') {
+          fileName = `${new Date().getTime()}.pdf`
+        }
+
+        inst.fabricObjects.forEach(function (fabricObj, index) {
+          if (index != 0) {
+            doc.addPage()
+            doc.setPage(index + 1)
+          }
+
+          doc.addImage(
+            fabricObj.toDataURL({
+              format: 'png'
+            }),
+            inst.pageImageCompression == 'NONE' ? 'PNG' : 'JPEG',
+            0,
+            0,
+            doc.internal.pageSize.getWidth(),
+            doc.internal.pageSize.getHeight(),
+            `page-${index + 1}`,
+            ['FAST', 'MEDIUM', 'SLOW'].indexOf(inst.pageImageCompression) >= 0
+              ? inst.pageImageCompression
+              : undefined
+          )
+
+          if (index === inst.fabricObjects.length - 1) {
+            doc.output('datauristring')
+
+            // console.log(canvas)
+            $('#pdfresult').val(doc.output('datauristring'))
+          }
+        })
+      }
+
+      PDFAnnotate.prototype.clearActivePage = function () {
+        var inst = this
+        var fabricObj = inst.fabricObjects[inst.active_canvas]
+        var bg = fabricObj.backgroundImage
+        if (confirm('Are you sure?')) {
+          fabricObj.clear()
+          fabricObj.setBackgroundImage(bg, fabricObj.renderAll.bind(fabricObj))
+        }
+      }
+    </script>
+
+    <script>
+      var pdf = new PDFAnnotate('pdf-container', `<%= pdf %>`, {
+        onPageUpdated (page, oldData, newData) {
+          console.log(page, oldData, newData)
+        },
+        ready () {
+          console.log('Plugin initialized successfully')
+        },
+        scale: 1.5,
+        pageImageCompression: 'MEDIUM' // FAST, MEDIUM, SLOW(Helps to control the new PDF file size)
+      })
+
+      function changeActiveTool (event) {
+        var element = $(event.target).hasClass('tool-button')
+          ? $(event.target)
+          : $(event.target)
+              .parents('.tool-button')
+              .first()
+        $('.tool-button.active').removeClass('active')
+        $(element).addClass('active')
+      }
+
+      function enableSelector (event) {
+        event.preventDefault()
+        changeActiveTool(event)
+        pdf.enableSelector()
+      }
+
+      function addImage (event) {
+        event.preventDefault()
+        pdf.addImageToCanvas()
+      }
+
+      function deleteSelectedObject (event) {
+        event.preventDefault()
+        pdf.deleteSelectedObject()
+      }
+
+      function savePDF () {
+        // pdf.savePdf();
+        pdf.savePdf('sample.pdf') // save with given file name
+      }
+
+      function clearPage () {
+        pdf.clearActivePage()
+      }
+    </script>
+  </body>
+</html>

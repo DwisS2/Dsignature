@@ -26,19 +26,32 @@ const addInput = document.querySelector('#addInput')
 const addBtn = document.querySelector('#addBtn')
 
 function addLists () {
-  if ((addInput.value === '') | (addInput.value === 'Choose a signer')) {
-    alert('Choose the signer please!!!')
-  } else if (listUl.innerText.search(addInput.value) >= 0) {
-    alert('Signer has been selected!!!')
-  } else {
-    const ul = divList.querySelector('ul')
-    const li = document.createElement('li')
-    li.innerHTML = addInput.value
-    addInput.value = ''
-    ul.appendChild(li)
-    createBtn(li)
-  }
+  const ul = divList.querySelector('ul')
+  const li = document.createElement('li')
+  li.innerHTML
+
+  addInput.value = ''
+  ul.appendChild(li)
+  createBtn(li)
 }
+
+const savebtn = document.querySelector('#savebtn')
+savebtn.addEventListener('click', () => {
+  var lis2 = document.querySelectorAll('ul li'),
+    i = 0,
+    jData = []
+  for (var li of lis2) {
+    var divs = li.getElementsByTagName('div'),
+      liObj = {}
+    for (var span of divs) liObj[span.className] = span.textContent
+    jData.push(liObj)
+  }
+  // jData = JSON.stringify(jData)
+  for (var i = 0; i < jData.length; i++) {
+    console.log(jData[i].div)
+    $('#email-result').val(jData[i].div)
+  }
+})
 
 // add list when clicked on add item button
 addBtn.addEventListener('click', () => {
@@ -58,31 +71,8 @@ addInput.addEventListener('keyup', event => {
 */
 // create variables
 const listUl = document.querySelector('.list')
+console.log(listUl.innerText)
 const lis = listUl.children
-
-function createBtn (li) {
-  // create remove button
-  const remove = document.createElement('button')
-  remove.className = 'btn-icon remove'
-  li.appendChild(remove)
-
-  // create down button
-  const down = document.createElement('button')
-  down.className = 'btn-icon down'
-  li.appendChild(down)
-
-  // create up button
-  const up = document.createElement('button')
-  up.className = 'btn-icon up'
-  li.appendChild(up)
-
-  //   const page = document.createElement('input')
-  //   page.className = 'number'
-  li.innerHTML +=
-    '<input type="number" class="btn-icon col-sm-1 text-center" name="page" min="1" max="999" placeholder="Page" required/>'
-
-  return li
-}
 
 // loop to add buttons in each li
 for (var i = 0; i < lis.length; i++) {
