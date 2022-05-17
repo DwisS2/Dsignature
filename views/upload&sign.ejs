@@ -77,11 +77,7 @@
               Uploaded Document
             </a>
           </button>
-          <button class="e-btn e-btn-border col-md-2 " type="submit">
-            <a href="/document/signed_document">
-              Signed Document
-            </a>
-          </button>
+
           <button class="e-btn e-btn-border col-md-2" type="submit">
             <a href="/document/signature_request">
               Signature Request
@@ -100,168 +96,88 @@
               Upload & Sign
             </a>
           </button>
-
+          <br />
+          <br />
           <div class="row">
             <div class="col-12">
-              <form action="#">
-                <div class="table-content table-responsive">
-                  <table class="table">
-                    <thead>
-                      <tr>
-                        <th class="product-thumbnail">No</th>
+              <div class="hero__content p-relative z-index-1">
+                <h3 class="hero__title">
+                  <span class="yellow-shape">Upload </span>Document
+                </h3>
 
-                        <th class="cart-product-name">Document</th>
+                <br />
 
-                        <th class="cart-product-name">Upload</th>
-                        <th class="cart-product-name">Signed</th>
-
-                        <th class="product-quantity">Certificate</th>
-
-                        <th class="product-remove">Action</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <% if (documents.length === 0) { %>
-                      <tr>
-                        <td colspan="6">
-                          <div class="alert alert-danger" role="alert">
-                            Document is still empty.
-                          </div>
-                        </td>
-                      </tr>
-                      <% } %> <% documents.forEach((document, i) => { i++ %>
-                      <tr>
-                        <td scope="row"><%= i++ %></td>
-
-                        <td><%= document.nm_document %></td>
-
-                        <td><%= document.timeCreated %></td>
-                        <td><%= document.timeSigned %></td>
-
-                        <td><%= document.certificate_number %></td>
-                        <td>
-                          <form></form>
-                          <form
-                            action="/document/download/<%= document._id %>"
-                            method="POST"
-                            class="d-inline"
-                          >
-                            <input
-                              type="hidden"
-                              name="_id"
-                              value="<%= document._id %>"
-                            />
-                            <button
-                              type="submit"
-                              class="btn btn-success badge rounded-pill"
-                            >
-                              <i class="bi bi-info-circle fa fa-download"></i>
-                              Download
-                            </button>
-                          </form>
-                        </td>
-                      </tr>
-                      <% }) %>
-                    </tbody>
-                  </table>
-                </div>
-              </form>
-            </div>
-          </div>
-          <br />
-          <a
-            class="btn btn-primary"
-            data-toggle="collapse"
-            href="#collapseExample"
-            role="button"
-            aria-expanded="false"
-            aria-controls="collapseExample"
-          >
-            Upload
-          </a>
-          <div class="collapse" id="collapseExample">
-            <br />
-            <div class="row">
-              <div class="col-12">
-                <div class="hero__content p-relative z-index-1">
-                  <h3 class="hero__title">
-                    <span class="yellow-shape">Upload </span>Document
-                  </h3>
+                <form
+                  method="post"
+                  action="/document/upload&sign"
+                  enctype="multipart/form-data"
+                >
+                  <div class="mb-3 row">
+                    <label for="staticEmail" class="col-sm-2 col-form-label"
+                      >Digital Certificate</label
+                    >
+                    <div class="col-sm-6">
+                      <input
+                        type="text"
+                        readonly
+                        class="form-control-plaintext"
+                        id="serialnumber"
+                        value="<%= certificatenumber %>"
+                        name="serialnumber"
+                      />
+                    </div>
+                  </div>
+                  <div class="mb-3 row">
+                    <label for="staticEmail" class="col-sm-2 col-form-label"
+                      >Certificate Password</label
+                    >
+                    <div class="col-sm-6">
+                      <% if (!certificates[0] | !signatures[0]) { %>
+                      <input
+                        type="password"
+                        name="certificate_password"
+                        placeholder="Enter the password you used to create a digital certificate"
+                        class="form-control"
+                        id="certificate_password"
+                        readonly
+                      />
+                      <% } else { %>
+                      <input
+                        type="password"
+                        name="certificate_password"
+                        placeholder="Enter the password you used to create a digital certificate"
+                        class="form-control"
+                        minlength="8"
+                        id="certificate_password"
+                      />
+                      <% } %>
+                    </div>
+                  </div>
+                  <div class="mb-3 row">
+                    <label for="staticEmail" class="col-sm-2 col-form-label"
+                      >Dokument (PDF)</label
+                    >
+                    <div class="col-sm-6">
+                      <input
+                        type="file"
+                        name="document"
+                        placeholder="document"
+                        id="document"
+                      />
+                    </div>
+                  </div>
 
                   <br />
-
-                  <form
-                    method="post"
-                    action="/document/upload&sign"
-                    enctype="multipart/form-data"
-                  >
-                    <div class="mb-3 row">
-                      <label for="staticEmail" class="col-sm-2 col-form-label"
-                        >Digital Certificate</label
-                      >
-                      <div class="col-sm-6">
-                        <input
-                          type="text"
-                          readonly
-                          class="form-control-plaintext"
-                          id="serialnumber"
-                          value="<%= certificatenumber %>"
-                          name="serialnumber"
-                        />
-                      </div>
-                    </div>
-                    <div class="mb-3 row">
-                      <label for="staticEmail" class="col-sm-2 col-form-label"
-                        >Certificate Password</label
-                      >
-                      <div class="col-sm-6">
-                        <% if (!certificates[0]) { %>
-                        <input
-                          type="password"
-                          name="certificate_password"
-                          placeholder="Enter the password you used to create a digital certificate"
-                          class="form-control"
-                          id="certificate_password"
-                          readonly
-                        />
-                        <% } else { %>
-                        <input
-                          type="password"
-                          name="certificate_password"
-                          placeholder="Enter the password you used to create a digital certificate"
-                          class="form-control"
-                          minlength="8"
-                          id="certificate_password"
-                        />
-                        <% } %>
-                      </div>
-                    </div>
-                    <div class="mb-3 row">
-                      <label for="staticEmail" class="col-sm-2 col-form-label"
-                        >Dokument (PDF)</label
-                      >
-                      <div class="col-sm-6">
-                        <input
-                          type="file"
-                          name="document"
-                          placeholder="document"
-                          id="document"
-                        />
-                      </div>
-                    </div>
-
-                    <br />
-                    <div class="btnbiru">
-                      <button
-                        type="submit"
-                        value="upload"
-                        class="btn btn-primary"
-                      >
-                        Next
-                      </button>
-                    </div>
-                  </form>
-                </div>
+                  <div class="btnbiru">
+                    <button
+                      type="submit"
+                      value="upload"
+                      class="btn btn-primary"
+                    >
+                      Next
+                    </button>
+                  </div>
+                </form>
               </div>
             </div>
           </div>

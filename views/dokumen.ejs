@@ -52,11 +52,7 @@
             Uploaded Document
           </a>
         </button>
-        <button class="e-btn e-btn-border col-md-2" type="submit">
-          <a href="/document/signed_document">
-            Signed Document
-          </a>
-        </button>
+
         <button class="e-btn e-btn-border col-md-2" type="submit">
           <a href="/document/signature_request">
             Signature Request
@@ -84,25 +80,26 @@
                       <th class="cart-product-name">Document</th>
                       <th class="product-price">Upload</th>
                       <th class="product-quantity">Signed</th>
+                      <th class="product-quantity">Rejected</th>
 
                       <th class="product-remove">Action</th>
                     </tr>
                   </thead>
                   <tbody>
-                    <% if (requests.length === 0) { %>
+                    <% if (documents.length === 0) { %>
                     <tr>
-                      <td colspan="5">
+                      <td colspan="6">
                         <div class="alert alert-danger" role="alert">
                           Document is still empty.
                         </div>
                       </td>
                     </tr>
-                    <% } %> <% requests.forEach((request, i) => { i++ %>
+                    <% } %> <% documents.forEach((document, i) => { i++ %>
                     <tr>
                       <td scope="row"><%= i++ %></td>
 
-                      <td><%= request.id_document.nm_document %></td>
-                      <td><%= request.id_document.timeCreated %></td>
+                      <td><%= document.nm_document %></td>
+                      <td><%= document.timeCreated %></td>
 
                       <td>
                         <a class="badge-success"
@@ -110,27 +107,31 @@
                             <div
                               class="progress-bar"
                               role="progressbar"
-                              style="width:<%= 100/(request.id_document.totalsigner/request.id_document.alreadysigned) %>%"
-                              aria-valuenow="<%= request.id_document.alreadysigned %>"
+                              style="width:<%= 100/(document.totalsigner/document.alreadysigned) %>%"
+                              aria-valuenow="<%= document.alreadysigned %>"
                               aria-valuemin="0"
-                              aria-valuemax="<%= request.id_document.totalsigner %>"
+                              aria-valuemax="<%= document.totalsigner %>"
                             >
-                              <%= request.id_document.alreadysigned %> / <%=
-                              request.id_document.totalsigner %>
+                              <%= document.alreadysigned %> / <%=
+                              document.totalsigner %>
                             </div>
                           </div></a
                         >
                       </td>
                       <td>
+                        <%= document.totalreject %>
+                      </td>
+                      <td>
+                        <form></form>
                         <form
-                          action="/document/download/<%= request.id_document._id %>"
+                          action="/document/download/<%= document._id %>"
                           method="POST"
                           class="d-inline"
                         >
                           <input
                             type="hidden"
                             name="_id"
-                            value="<%= request.id_document._id %>"
+                            value="<%= document._id %>"
                           />
                           <button
                             type="submit"
@@ -140,11 +141,7 @@
                             Download
                           </button>
                         </form>
-                        <a
-                          href="/signer/edit"
-                          class="btn btn-success badge rounded-pill"
-                          ><i class="bi bi-info-circle"></i> Edit</a
-                        >
+
                         <form
                           action="/document?_method=DELETE"
                           method="POST"
@@ -153,15 +150,21 @@
                           <input
                             type="hidden"
                             name="_id"
-                            value="<%= request.id_document._id %>"
+                            value="<%= document._id %>"
                           />
+
                           <button
                             type="submit"
                             onclick="return confirm('yakin?')"
-                            class="btn btn-success badge rounded-pill"
+                            class="btn btn-danger badge rounded-pill"
                           >
                             <i class="bi bi-info-circle"></i> Delete
                           </button>
+                          <a
+                            href="/document/detail/<%= document._id %>"
+                            class="btn btn-primary badge rounded-pill"
+                            ><i class="bi bi-info-circle"></i> Detail</a
+                          >
                         </form>
                       </td>
                     </tr>

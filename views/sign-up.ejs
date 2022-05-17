@@ -39,18 +39,18 @@
               <h2 class="section__title">
                 Create Account
               </h2>
-              <% if (messages) { %>
-              <p><%= messages.error %></p>
-              <% } %>
             </div>
           </div>
-        </div>
-        <div class="row">
-          <div
-            class="col-xxl-6 offset-xxl-3 col-xl-6 offset-xl-3 col-lg-8 offset-lg-2"
-          >
-            <div class="sign__wrapper white-bg">
-              <div class="sign__form">
+          <div class="row">
+            <div
+              class="col-xxl-6 offset-xxl-3 col-xl-6 offset-xl-3 col-lg-8 offset-lg-2"
+            >
+              <div class="sign__wrapper white-bg">
+                <div class="sign__form">
+                  <% if (messages) { %>
+                  <p><%= messages.error %></p>
+                  <% } %>
+                </div>
                 <form action="/register" method="POST">
                   <div class="sign__input-wrapper mb-25">
                     <h5>Full Name</h5>
@@ -59,6 +59,7 @@
                         type="name"
                         name="name"
                         placeholder="Full name"
+                        required
                       /><i class="fa fa-user" aria-hidden="true"></i>
                     </div>
                   </div>
@@ -69,6 +70,7 @@
                         type="email"
                         name="email"
                         placeholder="e-mail address"
+                        required
                       /><i class="fa fa-sign-in" aria-hidden="true"></i>
                     </div>
                   </div>
@@ -93,6 +95,8 @@
                         type="password"
                         name="password"
                         placeholder="Password"
+                        required
+                        minlength="8"
                       /><i class="fa fa-unlock-alt" aria-hidden="true"></i>
                     </div>
                   </div>

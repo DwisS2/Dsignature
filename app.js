@@ -7,13 +7,13 @@ const upload = require('express-fileupload')
 const verifyPDF = require('@ninja-labs/verify-pdf')
 require('dotenv').config()
 const mongoose = require('mongoose')
-const passport = require('passport')
+
 const flash = require('express-flash')
 const session = require('express-session')
 const User = require('./models/User')
-const Signer = require('./models/Signer')
+
 const Document = require('./models/Document')
-const Request = require('./models/Request')
+
 const Signature = require('./models/Signature')
 const Digital_certificate = require('./models/Certificate')
 const bcrypt = require('bcryptjs')
@@ -21,6 +21,7 @@ var cookieParser = require('cookie-parser')
 var morgan = require('morgan')
 const signer = require('node-signpdf')
 const p12 = require('p12-pem')
+
 const {
   PDFDocument,
   PDFName,
@@ -37,11 +38,10 @@ const {
   checkNotAuthenticated
 } = require('./middlewares/auth')
 const userSchema = require('./models/User')
-const signerSchema = require('./models/Signer')
+
 const documentSchema = require('./models/Document')
 const certificateSchema = require('./models/Certificate')
 const signatureSchema = require('./models/Signature')
-const requestSchema = require('./models/Request')
 
 const app = express()
 app.use(morgan('dev'))
@@ -75,20 +75,6 @@ var sessionChecker = (req, res, next) => {
   }
 }
 
-const initializePassport = require('./passport-config')
-
-initializePassport(
-  passport,
-  async email => {
-    const userFound = await User.findOne({ email })
-    return userFound
-  },
-  async id => {
-    const userFound = await User.findOne({ _id: id })
-    return userFound
-  }
-)
-
 app.use(flash())
 app.use(
   session({
@@ -97,8 +83,6 @@ app.use(
     saveUninitialized: false
   })
 )
-app.use(passport.initialize())
-app.use(passport.session())
 
 app.use(
   upload({
@@ -141,8 +125,6 @@ app.get('/about', sessionChecker, (req, res) => {
 })
 
 app.get('/signature', async (req, res) => {
-  // const users = await userSchema.find()
-  // const no = 1
   if (req.session.user && req.cookies.user_sid) {
     const signatures = await signatureSchema.find({
       id_user: req.session.user._id
@@ -173,24 +155,11 @@ app.get('/digitalcertificate', async (req, res) => {
       })
     }
 
-    // const {
-    //   pemKey,
-    //   pemCertificate,
-    //   commonName,
-    //   validPeriod
-    // } = p12.getPemFromP12(certificates[0].certificate, '12345678')
-
-    // const validity1 = JSON.stringify(commonName.validity.notBefore).slice(1, 10)
-    // const validity2 = JSON.stringify(commonName.validity.notAfter).slice(1, 10)
-
     const no = 1
     res.render('digitalsignature', {
       layout: 'layouts/main-layout-login',
       title: 'Digital Sign',
       certificates,
-      // serialnumber: commonName.serialNumber,
-      // validity3: validity1 + ' sampai ' + validity2,
-      // nama: commonName.issuer.attributes[5].value,
       msg: req.flash('msg')
     })
   } else {
@@ -198,14 +167,22 @@ app.get('/digitalcertificate', async (req, res) => {
   }
 })
 app.get('/digitalcertificate/createcertificate', async (req, res) => {
-  // const users = await userSchema.find()
-  // const no = 1
   if (req.session.user && req.cookies.user_sid) {
     res.render('create_certificate', {
       layout: 'layouts/main-layout-login',
       title: 'Digital Sign'
-      // users,
-      // msg: req.flash('msg')
+    })
+  } else {
+    res.redirect('/signin')
+  }
+})
+app.get('/document/detail/:_id', async (req, res) => {
+  if (req.session.user && req.cookies.user_sid) {
+    const document = await Document.findOne({ _id: req.params._id })
+    res.render('detaildocument', {
+      layout: 'layouts/main-layout-login',
+      title: 'Digital Sign',
+      document
     })
   } else {
     res.redirect('/signin')
@@ -213,31 +190,28 @@ app.get('/digitalcertificate/createcertificate', async (req, res) => {
 })
 app.get('/document', async (req, res) => {
   if (req.session.user && req.cookies.user_sid) {
-    const requests = await requestSchema
+    const documents = await documentSchema
       .find({
         id_user: req.session.user._id
       })
-      .populate('id_user')
-      .populate('id_document')
-    if (requests.length === 0) {
+      .sort({ timeCreated: -1 })
+
+    if (documents.length === 0) {
       res.render('dokumen', {
         layout: 'layouts/main-layout-login',
         title: 'Digital Sign',
-        requests,
+        documents,
         msg: req.flash('msg')
       })
     } else {
       const persen =
-        Math.floor(
-          100 /
-            (requests[0].id_document.totalsigner /
-              requests[0].id_document.alreadysigned)
-        ) + '%'
+        Math.floor(100 / (documents.totalsigner / documents.alreadysigned)) +
+        '%'
 
       res.render('dokumen', {
         layout: 'layouts/main-layout-login',
         title: 'Digital Sign',
-        requests,
+        documents,
         persen,
         msg: req.flash('msg')
       })
@@ -269,23 +243,59 @@ app.get('/document/signed_document', async (req, res) => {
 
 app.get('/document/signature_request', async (req, res) => {
   if (req.session.user && req.cookies.user_sid) {
-    const certificate = await certificateSchema.find({
+    const certificates = await certificateSchema.find({
       id_user: req.session.user._id
     })
-
-    const requests = await requestSchema
-      .find({
-        email: req.session.user.email
-      })
-      .populate('id_document')
-
-    res.render('signature_request', {
-      layout: 'layouts/main-layout-login',
-      title: 'Digital Sign',
-      requests,
-      certificate,
-      msg: req.flash('msg')
+    const signatures = await signatureSchema.find({
+      id_user: req.session.user._id
     })
+    const sessionemail = req.session.user.email
+    const documents = await documentSchema
+      .find({
+        'requestsigner.email': req.session.user.email
+      })
+      .populate('id_user')
+      .sort({ timeCreated: -1 })
+
+    if (certificates == 0) {
+      req.flash('msg', 'Please create a digital certificate first!')
+      res.render('signature_request', {
+        layout: 'layouts/main-layout-login',
+        title: 'Digital Sign',
+        documents,
+        certificatenumber:
+          'You dont have a digital certificate. Please create a digital certificate first!',
+        sessionemail,
+        signatures,
+        certificates,
+        msg: req.flash('msg')
+      })
+    } else if (signatures == 0) {
+      const certificatenumber = certificates[0].serialnumber
+      req.flash('msg', 'Please create a signature first!')
+      res.render('signature_request', {
+        layout: 'layouts/main-layout-login',
+        title: 'Digital Sign',
+        documents,
+        certificatenumber,
+        sessionemail,
+        signatures,
+        certificates,
+        msg: req.flash('msg')
+      })
+    } else if (certificates) {
+      const certificatenumber = certificates[0].serialnumber
+      res.render('signature_request', {
+        layout: 'layouts/main-layout-login',
+        title: 'Digital Sign',
+        documents,
+        certificatenumber,
+        sessionemail,
+        signatures,
+        certificates,
+        msg: req.flash('msg')
+      })
+    }
   } else {
     res.redirect('/signin')
   }
@@ -296,13 +306,9 @@ app.get('/document/upload&sign', async (req, res) => {
     const certificates = await certificateSchema.find({
       id_user: req.session.user._id
     })
-    const documents = await documentSchema
-      .find({
-        id_signer: req.session.user._id
-      })
-      .find({ status: 'signed' })
-      .populate('id_signer')
-      .populate('id_user')
+    const signatures = await signatureSchema.find({
+      id_user: req.session.user._id
+    })
 
     if (!certificates[0]) {
       res.render('upload&sign', {
@@ -312,7 +318,18 @@ app.get('/document/upload&sign', async (req, res) => {
           'You dont have a digital certificate, please create a digital certificate first',
         msg: req.flash('msg'),
         certificates,
-        documents
+        signatures
+      })
+    } else if (!signatures[0]) {
+      const certificatenumber2 = certificates[0].serialnumber
+      req.flash('msg', 'Please create a Signature first!')
+      res.render('upload&sign', {
+        layout: 'layouts/main-layout-login',
+        title: 'Digital Sign',
+        certificatenumber: certificatenumber2,
+        msg: req.flash('msg'),
+        certificates,
+        signatures
       })
     } else if (certificates) {
       const certificatenumber2 = certificates[0].serialnumber
@@ -322,7 +339,7 @@ app.get('/document/upload&sign', async (req, res) => {
         certificatenumber: certificatenumber2,
         msg: req.flash('msg'),
         certificates,
-        documents
+        signatures
       })
     }
   } else {
@@ -337,21 +354,6 @@ app.get('/document/upload', async (req, res) => {
       title: 'Digital Sign',
       msg: req.flash('msg'),
       users
-    })
-  } else {
-    res.redirect('/signin')
-  }
-})
-
-app.get('/signer', async (req, res, value) => {
-  const signers = await signerSchema.find()
-  const no = 1
-  if (req.session.user && req.cookies.user_sid) {
-    res.render('signer', {
-      layout: 'layouts/main-layout-login',
-      title: 'Digital Sign',
-      signers,
-      msg: req.flash('msg')
     })
   } else {
     res.redirect('/signin')
@@ -390,7 +392,8 @@ app.post(
 app.get('/register', sessionChecker, (req, res) => {
   res.render('sign-up', {
     layout: 'layouts/main-layout',
-    title: 'Digital Sign'
+    title: 'Digital Sign',
+    msg: req.flash('msg')
   })
 })
 
@@ -422,6 +425,7 @@ app.post('/register', async (req, res) => {
       })
 
       await user.save()
+      req.flash('msg', 'Account registration has been successful')
       res.redirect('/signin')
     } catch (error) {
       console.log(error)
@@ -429,87 +433,6 @@ app.post('/register', async (req, res) => {
     }
   }
 })
-
-app.post('/registersigner', async (req, res) => {
-  // console.log(req.files)
-  const userFound = await Signer.findOne({ email: req.body.email })
-
-  if (userFound) {
-    req.flash('error', 'User with that email already exists')
-    res.redirect('/registersigner')
-  } else {
-    try {
-      const hashedPassword = await bcrypt.hash(req.body.password, 10)
-      const signer = new Signer({
-        name: req.body.name,
-        email: req.body.email,
-        nohp: req.body.nohp,
-        password: hashedPassword,
-        certificate: req.files.file.data,
-
-        status: 'inactive'
-      })
-
-      await signer.save()
-      res.redirect('/signin')
-    } catch (error) {
-      console.log(error)
-      res.redirect('/registersigner')
-    }
-  }
-})
-
-// app.put('/signer', async (req, res) => {
-//   console.log(req.files)
-// })
-
-app.put(
-  '/signer',
-  [
-    body('certificate').custom(async (value, { req }) => {
-      if (!req.files) {
-        throw new Error('certificate digital wajib diisi')
-      }
-      return true
-      // throw new Error('certificate digital wajib diisi asdasd')
-    })
-  ],
-  async (req, res) => {
-    // console.log(req.files)
-    const errors = validationResult(req)
-    if (!errors.isEmpty()) {
-      res.render('editsigner', {
-        title: 'Form Ubah Data Contact',
-        layout: 'layouts/main-layout-login',
-        errors: errors.array(),
-        signer: req.body
-      })
-    } else {
-      try {
-        const hashedPassword = await bcrypt.hash(req.body.password, 10)
-        Signer.updateOne(
-          { _id: req.body._id },
-          {
-            $set: {
-              name: req.body.name,
-              email: req.body.email,
-              nohp: req.body.nohp,
-              password: hashedPassword,
-              certificate: req.files.certificate.data,
-              status: req.body.status
-            }
-          }
-        ).then(result => {
-          req.flash('msg', 'Data Signer Berhasil Diubah!')
-          res.redirect('/signer')
-        })
-      } catch (error) {
-        console.log(error)
-        res.redirect('/signer')
-      }
-    }
-  }
-)
 
 app.get('/home', async (req, res) => {
   if (req.session.user && req.cookies.user_sid) {
@@ -527,12 +450,14 @@ app.get('/document/upload&sign/:_id', async (req, res) => {
   if (req.session.user && req.cookies.user_sid) {
     const document = await Document.findOne({ _id: req.params._id })
     const signature = await Signature.findOne({ id_user: req.session.user._id })
+    const signer = await User.findOne({ _id: req.session.user._id })
 
     res.render('viewpdf', {
       title: 'Digital Signature',
       layout: 'layouts/teslayout.ejs',
       document,
       signature,
+      signer,
       pdf: 'data:application/pdf;base64,' + document.document
     })
   } else {
@@ -555,6 +480,20 @@ app.get('/document/upload/:_id', async (req, res) => {
   } else {
     res.redirect('/signin')
   }
+})
+
+app.get('/doc/:docid/signer/:signerid', async (req, res) => {
+  const document = await Document.findOne({ _id: req.params.docid }).populate(
+    'id_user'
+  )
+  const signer = await User.findOne({ _id: req.params.signerid })
+  console.log(signer)
+  res.render('detailfromqrcode', {
+    title: 'Digital Signature',
+    layout: 'layouts/main-layout-qrcode',
+    document,
+    signer
+  })
 })
 
 app.put('/savepdfsign', async (req, res) => {
@@ -594,13 +533,10 @@ app.put('/savepdfsign', async (req, res) => {
         Subtype: 'Widget',
         FT: 'Sig',
         Rect: [0, 0, 0, 0],
-        // Rect: [image.width,image.height, 0, 0],
         V: signatureDictRef,
         T: PDFString.of('Signature1'),
         F: 4,
         P: pages[0].ref
-        // P: pages[pages.length - 1].ref, //lastPage
-        // AP: pdfDoc.context.obj({N: signatureAppearanceStreamRef})
       })
       const widgetDictRef = pdfDoc.context.register(widgetDict)
       // Add our signature widget to the first page
@@ -630,14 +566,17 @@ app.put('/savepdfsign', async (req, res) => {
           {
             $set: {
               document: pdf,
-              status: 'signed',
+
               id_signer: req.session.user._id,
-              timeSigned: Date.now()
+              timeSigned: Date.now(),
+              sign: [req.session.user.email],
+              alreadysigned: 1,
+              agree: [req.session.user.email]
             }
           }
         ).then(result => {
           req.flash('msg', 'Document successfully signed!')
-          res.redirect('/document/upload&sign')
+          res.redirect('/document')
         })
       } catch (error) {
         console.log(error)
@@ -654,10 +593,13 @@ app.put('/savepdfsign2', async (req, res) => {
     const certificates = await Digital_certificate.find({
       id_user: req.session.user._id
     })
-    const requests = await Request.find({
-      email: req.session.user.email
-    }).populate('id_document')
-    const alrdysign = requests[0].id_document.alreadysigned
+
+    const documents = await documentSchema
+      .find({
+        _id: req.body._id
+      })
+      .populate('id_user')
+
     const cert = certificates[0].serialnumber
 
     const dok = req.body.pdfbase64
@@ -727,31 +669,132 @@ app.put('/savepdfsign2', async (req, res) => {
       })
       const pdf = signedPdfBuffer.toString('base64') //PDF WORKS
       try {
-        Request.updateOne(
-          { email: req.session.user.email, id_document: req.body._id },
-          {
-            $set: {
-              status: 'signed',
-              certificate_number: cert
+        const emailsign = documents[0].sign[0]
+        const emailsign1 = documents[0].sign[1]
+        const emailsign2 = documents[0].sign[2]
+        const emailsign3 = documents[0].sign[3]
+        const emailsign4 = documents[0].sign[4]
+        const emailsign5 = documents[0].sign[5]
+        const signuser = documents[0].alreadysigned
+        if (!emailsign) {
+          Document.updateOne(
+            { _id: req.body._id },
+            {
+              $set: {
+                document: pdf,
+
+                id_signer: req.session.user._id,
+                timeSigned: Date.now(),
+                sign: [req.session.user.email],
+                alreadysigned: signuser + 1
+              }
             }
-          }
-        ).then(result => {})
-        Document.updateOne(
-          { _id: req.body._id },
-          {
-            $set: {
-              document: pdf,
-              alreadysigned: alrdysign + 1,
-              timeSigned: Date.now()
+          ).then(result => {
+            req.flash('msg', 'Document has been signed successfully')
+            res.redirect('/document/signature_request')
+          })
+        } else if (!emailsign1) {
+          Document.updateOne(
+            { _id: req.body._id },
+            {
+              $set: {
+                document: pdf,
+                id_signer: req.session.user._id,
+                timeSigned: Date.now(),
+                sign: [emailsign, req.session.user.email],
+                alreadysigned: signuser + 1
+              }
             }
-          }
-        ).then(result => {
-          req.flash('msg', 'Document successfully signed!')
-          res.redirect('/document')
-        })
+          ).then(result => {
+            req.flash('msg', 'Document has been signed successfully')
+            res.redirect('/document/signature_request')
+          })
+        } else if (!emailsign2) {
+          Document.updateOne(
+            { _id: req.body._id },
+            {
+              $set: {
+                document: pdf,
+                id_signer: req.session.user._id,
+                timeSigned: Date.now(),
+                sign: [emailsign, emailsign1, req.session.user.email],
+                alreadysigned: signuser + 1
+              }
+            }
+          ).then(result => {
+            req.flash('msg', 'Document has been signed successfully')
+            res.redirect('/document/signature_request')
+          })
+        } else if (!emailsign3) {
+          Document.updateOne(
+            { _id: req.body._id },
+            {
+              $set: {
+                document: pdf,
+                id_signer: req.session.user._id,
+                timeSigned: Date.now(),
+                sign: [
+                  emailsign,
+                  emailsign1,
+                  emailsign2,
+                  req.session.user.email
+                ],
+                alreadysigned: signuser + 1
+              }
+            }
+          ).then(result => {
+            req.flash('msg', 'Document has been signed successfully')
+            res.redirect('/document/signature_request')
+          })
+        } else if (!emailsign4) {
+          Document.updateOne(
+            { _id: req.body._id },
+            {
+              $set: {
+                document: pdf,
+                id_signer: req.session.user._id,
+                timeSigned: Date.now(),
+                sign: [
+                  emailsign,
+                  emailsign1,
+                  emailsign2,
+                  emailsign3,
+                  req.session.user.email
+                ],
+                alreadysigned: signuser + 1
+              }
+            }
+          ).then(result => {
+            req.flash('msg', 'Document has been signed successfully')
+            res.redirect('/document/signature_request')
+          })
+        } else if (!emailsign5) {
+          Document.updateOne(
+            { _id: req.body._id },
+            {
+              $set: {
+                document: pdf,
+                id_signer: req.session.user._id,
+                timeSigned: Date.now(),
+                sign: [
+                  emailsign,
+                  emailsign1,
+                  emailsign2,
+                  emailsign3,
+                  emailsign4,
+                  req.session.user.email
+                ],
+                alreadysigned: signuser + 1
+              }
+            }
+          ).then(result => {
+            req.flash('msg', 'Document has been signed successfully')
+            res.redirect('/document/signature_request')
+          })
+        }
       } catch (error) {
         console.log(error)
-        res.redirect('/document/upload/:_id')
+        res.redirect('/document/signature_request')
       }
     })()
   } else {
@@ -768,8 +811,13 @@ app.post('/document/upload&sign', async (req, res) => {
       var user = await Digital_certificate.findOne({
         id_user: req.session.user._id
       }).exec()
-
-      if (user.certificate_password != password) {
+      if (!user) {
+        req.flash(
+          'msg',
+          'You dont have a digital certificate. Please make a digital certificate first!'
+        )
+        res.redirect('/document/upload&sign')
+      } else if (user.certificate_password != password) {
         req.flash('msg', 'Password incorrect!')
         res.redirect('/document/upload&sign')
       } else {
@@ -780,9 +828,13 @@ app.post('/document/upload&sign', async (req, res) => {
           id_user: user_id,
           document: base64document,
           nm_document: nama_document,
-          status: 'in progress sign',
+          totalsigner: 1,
           certificate_number: number,
-          timeSigned: ''
+          timeSigned: '',
+          requestsigner: {
+            page: '',
+            email: ''
+          }
         })
         await document.save()
         const id_doc = document._id
@@ -799,31 +851,159 @@ app.post('/document/upload&sign', async (req, res) => {
 })
 
 app.post('/document/upload', async (req, res) => {
+  console.log(req.body.page.length)
   if (req.session.user && req.cookies.user_sid) {
     try {
       const user_id = req.session.user._id
       const base64document = req.files.document.data.toString('base64')
       const nama_document = req.files.document.name
 
-      const document = new Document({
-        id_user: user_id,
-        document: base64document,
-        nm_document: nama_document,
-        isorder: req.body.isorder,
-        totalsigner: req.body.page.length
-      })
-      await document.save()
-      const document_id = document._id
-      for (var i = 0; i < req.body.page.length; i++) {
-        const request = new Request({
-          page: req.body.page[i],
-          order: req.body.order[i],
-          email: req.body.email[i],
-          id_document: document_id,
-          id_user: req.session.user._id
+      if (req.body.page.length == 2) {
+        const document = new Document({
+          id_user: user_id,
+          document: base64document,
+          nm_document: nama_document,
+          qrcode: req.body.qrcode,
+          totalsigner: req.body.page.length,
+          agree: [''],
+          sign: [''],
+          requestsigner: [
+            {
+              page: req.body.page[0],
+
+              email: req.body.email[0]
+            },
+            {
+              page: req.body.page[1],
+
+              email: req.body.email[1]
+            }
+          ]
         })
-        await request.save()
+        await document.save()
+      } else if (req.body.page.length == 3) {
+        const document = new Document({
+          id_user: user_id,
+          document: base64document,
+          nm_document: nama_document,
+          qrcode: req.body.qrcode,
+          totalsigner: req.body.page.length,
+          agree: [''],
+          sign: [''],
+          requestsigner: [
+            {
+              page: req.body.page[0],
+
+              email: req.body.email[0]
+            },
+            {
+              page: req.body.page[1],
+
+              email: req.body.email[1]
+            },
+            {
+              page: req.body.page[2],
+
+              email: req.body.email[2]
+            }
+          ]
+        })
+        await document.save()
+      } else if (req.body.page.length == 4) {
+        const document = new Document({
+          id_user: user_id,
+          document: base64document,
+          nm_document: nama_document,
+          qrcode: req.body.qrcode,
+          totalsigner: req.body.page.length,
+          agree: [''],
+          sign: [''],
+          requestsigner: [
+            {
+              page: req.body.page[0],
+
+              email: req.body.email[0]
+            },
+            {
+              page: req.body.page[1],
+
+              email: req.body.email[1]
+            },
+            {
+              page: req.body.page[2],
+
+              email: req.body.email[2]
+            },
+            {
+              page: req.body.page[3],
+
+              email: req.body.email[3]
+            }
+          ]
+        })
+        await document.save()
+      } else if (req.body.page.length == 5) {
+        const document = new Document({
+          id_user: user_id,
+          document: base64document,
+          nm_document: nama_document,
+          qrcode: req.body.qrcode,
+          totalsigner: req.body.page.length,
+          agree: [''],
+          sign: [''],
+          requestsigner: [
+            {
+              page: req.body.page[0],
+
+              email: req.body.email[0]
+            },
+            {
+              page: req.body.page[1],
+
+              email: req.body.email[1]
+            },
+            {
+              page: req.body.page[2],
+
+              email: req.body.email[2]
+            },
+            {
+              page: req.body.page[3],
+
+              email: req.body.email[3]
+            },
+            {
+              page: req.body.page[4],
+
+              email: req.body.email[4]
+            }
+          ]
+        })
+        await document.save()
+      } else if (req.body.page.length > 5) {
+        req.flash(
+          'msg',
+          'Signature image added successfullyThe maximum limit for signing is five.'
+        )
+        res.redirect('/document/upload')
+      } else if (req.body.page.length == 1) {
+        const document = new Document({
+          id_user: user_id,
+          document: base64document,
+          nm_document: nama_document,
+          qrcode: req.body.qrcode,
+          totalsigner: req.body.page.length,
+          agree: '',
+          sign: '',
+          requestsigner: {
+            page: req.body.page,
+
+            email: req.body.email
+          }
+        })
+        await document.save()
       }
+
       res.redirect('/document')
     } catch (error) {
       console.log(error)
@@ -967,19 +1147,16 @@ app.post('/digitalsignature/createcertificate', async (req, res) => {
     }
   } else {
     res.redirect('/signin')
-    // console.log(req.files.file.data)
   }
 })
 
 app.post('/hasilverifikasi', sessionChecker, (req, res) => {
-  // signedpdf = req.files
   namapdf = req.files.file.name
   bufferpdf = req.files.file.data
 
   const { verified, authenticity, integrity, expired, meta } = verifyPDF(
     bufferpdf
   )
-  // console.log(expired)
   if (!integrity) {
     hasilpdf = 'Dokumen tidak memiliki tanda tangan digital'
   } else if (
@@ -1024,18 +1201,14 @@ app.post('/hasilverifikasi', sessionChecker, (req, res) => {
     layout: 'layouts/main-layout',
     title: 'Digital Sign'
   })
-
-  // console.log(namapdf)
 })
 app.post('/hasilverifikasi2', (req, res) => {
-  // signedpdf = req.files
   namapdf = req.files.file.name
   bufferpdf = req.files.file.data
 
   const { verified, authenticity, integrity, expired, meta } = verifyPDF(
     bufferpdf
   )
-  // console.log(expired)
   if (!integrity) {
     hasilpdf = 'Dokumen tidak memiliki tanda tangan digital'
   } else if (
@@ -1080,27 +1253,7 @@ app.post('/hasilverifikasi2', (req, res) => {
     layout: 'layouts/main-layout-login',
     title: 'Digital Sign'
   })
-
-  // console.log(namapdf)
 })
-
-app.get('/signer/edit/:name', async (req, res) => {
-  const signer = await Signer.findOne({ name: req.params.name })
-  if (req.session.user && req.cookies.user_sid) {
-    res.render('editsigner', {
-      title: 'Digital Signature',
-      layout: 'layouts/main-layout-login',
-      signer
-    })
-  } else {
-    res.redirect('/signin')
-  }
-})
-
-// app.delete('/logout', (req, res) => {
-//   req.logOut()
-//   res.redirect('/index')
-// })
 
 app.get('/logout', (req, res) => {
   if (req.session.user && req.cookies.user_sid) {
@@ -1111,14 +1264,8 @@ app.get('/logout', (req, res) => {
   }
 })
 
-app.delete('/signer', (req, res) => {
-  Signer.deleteOne({ email: req.body.email }).then(result => {
-    req.flash('msg', 'Data signer berhasil dihapus!')
-    res.redirect('/signer')
-  })
-})
 app.delete('/document', (req, res) => {
-  Request.deleteOne({ id_document: req.body._id }).then(result => {})
+  Request.deleteOne({ _id: req.body.request_id }).then(result => {})
   Document.deleteOne({ _id: req.body._id }).then(result => {
     req.flash('msg', 'Document deleted successfully!')
     res.redirect('/document')
@@ -1150,17 +1297,30 @@ app.post('/document/download/:_id', async (req, res) => {
   res.setHeader('Content-type', 'application/pdf')
   res.end(download)
 })
-
-app.post('/document/signature_request/download/:_id', async (req, res) => {
-  const requests = await Request.findOne({
-    id_document: req.params._id
-  }).populate('id_document')
-
-  const bufferDokumen = requests.id_document.document
+app.post('/document/detail/view/:_id', async (req, res) => {
+  const dokumenPdf = await Document.findOne({
+    _id: req.params._id
+  })
+  const bufferDokumen = dokumenPdf.document
   const download = Buffer.from(bufferDokumen, 'base64')
   res.setHeader(
     'Content-disposition',
-    'inline; filename="' + requests.id_document.nm_document + '.pdf"'
+    'inline; filename="' + dokumenPdf.nm_document + '.pdf"'
+  )
+  res.setHeader('Content-type', 'application/pdf')
+  res.end(download)
+})
+
+app.post('/document/signature_request/download/:_id', async (req, res) => {
+  const documents = await Document.findOne({
+    _id: req.params._id
+  })
+
+  const bufferDokumen = documents.document
+  const download = Buffer.from(bufferDokumen, 'base64')
+  res.setHeader(
+    'Content-disposition',
+    'inline; filename="' + documents.nm_document + '.pdf"'
   )
   res.setHeader('Content-type', 'application/pdf')
   res.end(download)
@@ -1175,8 +1335,10 @@ app.post('/document/signature_request/sign', async (req, res) => {
       var user = await Digital_certificate.findOne({
         id_user: req.session.user._id
       }).exec()
-
-      if (user.certificate_password != password) {
+      if (!user) {
+        req.flash('msg', 'You dont have a digital certificate. ')
+        res.redirect('/document/signature_request')
+      } else if (user.certificate_password != password) {
         req.flash('msg', 'Password incorrect!')
         res.redirect('/document/signature_request')
       } else {
@@ -1194,149 +1356,87 @@ app.post('/document/signature_request/sign', async (req, res) => {
 
 app.post('/document/signature_request/agree/:_id', async (req, res) => {
   if (req.session.user && req.cookies.user_sid) {
-    const request2 = await Request.findOne({
+    const documents = await Document.findOne({
       _id: req.params._id
     })
-    if ((requestvalue = request2.agree === undefined)) {
-      try {
-        Request.updateOne(
-          { _id: req.params._id },
-          {
-            $set: {
-              agree: 1
+
+    for (let i = 0; i < documents.totalsigner; i++) {
+      if (documents.requestsigner[i].email == req.session.user.email) {
+        const emailagree = documents.agree[i]
+        try {
+          Document.updateOne(
+            { _id: req.params._id },
+            {
+              $set: {
+                agree: [emailagree, req.session.user.email]
+              }
             }
-          }
-        ).then(result => {
-          req.flash('msg', 'Request has been approved')
+          ).then(result => {
+            req.flash('msg', 'Request has been approved')
+            res.redirect('/document/signature_request')
+          })
+        } catch (error) {
+          console.log(error)
           res.redirect('/document/signature_request')
-        })
-      } catch (error) {
-        console.log(error)
-        res.redirect('/document/signature_request')
-      }
-    } else {
-      try {
-        Request.updateOne(
-          { _id: req.params._id },
-          {
-            $set: {
-              agree: requestvalue + 1
-            }
-          }
-        ).then(result => {
-          req.flash('msg', 'Request has been approved')
-          res.redirect('/document/signature_request')
-        })
-      } catch (error) {
-        console.log(error)
-        res.redirect('/document/signature_request')
+        }
       }
     }
   } else {
     res.redirect('/signin')
   }
 })
-
-app.post('/signer/home/:_id', async (req, res) => {
-  const dokumenPdf = await Document.findOne({
-    _id: req.params._id
-  }).populate('id_signer')
-  const pdfBuffer = dokumenPdf.document
-  const p12Buffer = dokumenPdf.id_signer.certificate
-
-  const SIGNATURE_LENGTH = 3322
-
-  ;(async () => {
-    const pdfDoc = await PDFDocument.load(pdfBuffer)
-    const pages = pdfDoc.getPages()
-    const firstPage = pages[pages.length - 1]
-
-    const pngImageBytes = fs.readFileSync('./signature1.png')
-    const pngImage = await pdfDoc.embedPng(pngImageBytes)
-    const pngDims = pngImage.scale(0.5)
-
-    const ByteRange = PDFArrayCustom.withContext(pdfDoc.context)
-    ByteRange.push(PDFNumber.of(0))
-    ByteRange.push(PDFName.of(signer.DEFAULT_BYTE_RANGE_PLACEHOLDER))
-    ByteRange.push(PDFName.of(signer.DEFAULT_BYTE_RANGE_PLACEHOLDER))
-    ByteRange.push(PDFName.of(signer.DEFAULT_BYTE_RANGE_PLACEHOLDER))
-
-    const signatureDict = pdfDoc.context.obj({
-      Type: 'Sig',
-      Filter: 'Adobe.PPKLite',
-      SubFilter: 'adbe.pkcs7.detached',
-      ByteRange,
-      Contents: PDFHexString.of('A'.repeat(SIGNATURE_LENGTH)),
-      Reason: PDFString.of('We need your signature for reasons...'),
-      M: PDFString.fromDate(new Date())
+app.post('/document/signature_request/reject/:_id', async (req, res) => {
+  if (req.session.user && req.cookies.user_sid) {
+    const documents = await Document.findOne({
+      _id: req.params._id
     })
 
-    const signatureDictRef = pdfDoc.context.register(signatureDict)
-
-    const widgetDict = pdfDoc.context.obj({
-      Type: 'Annot',
-      Subtype: 'Widget',
-      FT: 'Sig',
-      Rect: [57.64, 534.945, 480, 270],
-      // Rect: [image.width,image.height, 0, 0],
-      V: signatureDictRef,
-      T: PDFString.of('Signature1'),
-      F: 4,
-      P: pages[0].ref
-      // P: pages[pages.length - 1].ref, //lastPage
-      // AP: pdfDoc.context.obj({N: signatureAppearanceStreamRef})
-    })
-    const widgetDictRef = pdfDoc.context.register(widgetDict)
-
-    // Add our signature widget to the first page
-    pages[0].node.set(PDFName.of('Annots'), pdfDoc.context.obj([widgetDictRef]))
-
-    // Create an AcroForm object containing our signature widget
-    pdfDoc.catalog.set(
-      PDFName.of('AcroForm'),
-      pdfDoc.context.obj({
-        SigFlags: 3,
-        Fields: [widgetDictRef]
-      })
-    )
-
-    firstPage.drawImage(pngImage, {
-      x: firstPage.getWidth() / 2 - pngDims.width / 2 + 75,
-      y: firstPage.getHeight() / 2 - pngDims.height,
-      width: pngDims.width,
-      height: pngDims.height
-    })
-
-    const modifiedPdfBytes = await pdfDoc.save({ useObjectStreams: false })
-    const modifiedPdfBuffer = Buffer.from(modifiedPdfBytes)
-
-    const signObj = new signer.SignPdf()
-    const signedPdfBuffer = signObj.sign(modifiedPdfBuffer, p12Buffer, {
-      passphrase: '123'
-    })
-
-    // Write the signed file
-    // fs.writeFileSync('./signed6.pdf', signedPdfBuffer)
-    // console.log(modifiedPdfBuffer)
-    try {
-      Document.updateOne(
-        { _id: req.body._id },
-        {
-          $set: {
-            document: signedPdfBuffer
+    for (let i = 0; i < documents.totalsigner; i++) {
+      if (documents.requestsigner[i].email == req.session.user.email) {
+        const emailreject = documents.reject[i]
+        const ttlreject = documents.totalreject
+        if (documents.reject == 0) {
+          try {
+            Document.updateOne(
+              { _id: req.params._id },
+              {
+                $set: {
+                  reject: [req.session.user.email],
+                  totalreject: 1
+                }
+              }
+            ).then(result => {
+              req.flash('msg', 'Request has been rejected')
+              res.redirect('/document/signature_request')
+            })
+          } catch (error) {
+            console.log(error)
+            res.redirect('/document/signature_request')
+          }
+        } else {
+          try {
+            Document.updateOne(
+              { _id: req.params._id },
+              {
+                $set: {
+                  reject: [emailreject, req.session.user.email],
+                  totalreject: ttlreject + 1
+                }
+              }
+            ).then(result => {
+              req.flash('msg', 'Request has been rejected')
+              res.redirect('/document/signature_request')
+            })
+          } catch (error) {
+            console.log(error)
+            res.redirect('/document/signature_request')
           }
         }
-      ).then(result => {
-        req.flash('msg', 'Dokumen Berhasil Ditanda Tangan!')
-        res.redirect('/signer/home')
-      })
-    } catch (error) {
-      console.log(error)
-      res.redirect('/signer/home')
+      }
     }
-  })()
-
-  // console.log(dokumenPdf.id_signer)
+  } else {
+    res.redirect('/signin')
+  }
 })
 
 mongoose

@@ -51,11 +51,7 @@
             Uploaded Document
           </a>
         </button>
-        <button class="e-btn e-btn-border col-md-2 " type="submit">
-          <a href="/document/signed_document">
-            Signed Document
-          </a>
-        </button>
+
         <button
           class="e-btn e-btn-border col-md-2 btn-active-document"
           type="submit"
@@ -92,7 +88,7 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <% if (requests.length === 0) { %>
+                  <% if (documents.length === 0) { %>
                   <tr>
                     <td colspan="6">
                       <div class="alert alert-danger" role="alert">
@@ -100,37 +96,42 @@
                       </div>
                     </td>
                   </tr>
-                  <% } %> <% requests.forEach((request, i) => { i++ %>
+                  <% } %> <% documents.forEach((document, i) => { i++ %>
                   <tr>
                     <td scope="row"><%= i++ %></td>
 
                     <td>
-                      <%= request.id_document.nm_document, request.email %>
+                      <%= document.nm_document %>
                     </td>
-                    <td><%= request.id_document.timeCreated %></td>
-                    <% if (request.status == 'signed') { %>
                     <td>
-                      <a class="btn-success badge rounded-pill"
-                        ><i class="bi bi-info-circle"></i>Signed</a
-                      >
+                      <%= document.timeCreated %> <br />by: <%=
+                      document.id_user.name %>
+                    </td>
+                    <% if (document.sign[0] === sessionemail | document.sign[1]
+                    === sessionemail | document.sign[2] === sessionemail |
+                    document.sign[3] === sessionemail | document.sign[4] ===
+                    sessionemail | document.sign[5] === sessionemail) { %>
+                    <td>
+                      Signed
                     </td>
                     <td>
                       <a
-                        href="/signer/edit"
-                        class="btn btn-success badge rounded-pill"
+                        href="/document/detail/<%= document._id %>"
+                        class="btn btn-primary badge rounded-pill"
                         ><i class="bi bi-info-circle"></i> Detail</a
                       >
                     </td>
+
                     <td>
                       <form
-                        action="/document/signature_request/download/<%= request.id_document._id %>"
+                        action="/document/signature_request/download/<%= document._id %>"
                         method="POST"
                         class="d-inline"
                       >
                         <input
                           type="hidden"
                           name="_id"
-                          value="<%= request.id_document._id %>"
+                          value="<%= document._id %>"
                         />
                         <button
                           type="submit"
@@ -141,36 +142,70 @@
                         </button>
                       </form>
                     </td>
-                    <% } else if (request.agree > 0) { %>
-                    <td>
-                      <a class="btn-success badge rounded-pill"
-                        ><i class="bi bi-info-circle"></i>Agree</a
-                      >
-                    </td>
+                    <% } else if (document.agree[0] === sessionemail |
+                    document.agree[1] === sessionemail | document.agree[2] |
+                    document.agree[3] | document.agree[4] | document.agree[5]
+                    === sessionemail) { %>
+                    <td>Approved</td>
                     <td>
                       <a
-                        href="/signer/edit"
-                        class="btn btn-success badge rounded-pill"
+                        href="/document/detail/<%= document._id %>"
+                        class="btn btn-primary badge rounded-pill"
                         ><i class="bi bi-info-circle"></i> Detail</a
                       >
                     </td>
                     <td>
+                      <% if (!signatures[0] ) { %>
                       <button
                         type="button"
                         class="btn btn-success badge rounded-pill modalclick"
                         data-toggle="modal"
-                        data-target="#document<%= request.id_document._id %>"
-                        data-id="<%= request.id_document._id %>"
+                        data-target="#document"
+                        data-id="<%= document._id %>"
+                        disabled
                       >
                         Sign
                       </button>
+                      <% } else { %>
+                      <button
+                        type="button"
+                        class="btn btn-success badge rounded-pill modalclick"
+                        data-toggle="modal"
+                        data-target="#document"
+                        data-id="<%= document._id %>"
+                      >
+                        Sign
+                      </button>
+                      <% } %>
                     </td>
-                    <% } else { %>
+                    <% } else if(document.reject[0] === sessionemail |
+                    document.reject[1] === sessionemail | document.reject[2] |
+                    document.reject[3] | document.reject[4] | document.reject[5]
+                    === sessionemail) { %>
+                    <td>Rejected</td>
+                    <td>
+                      <a
+                        href="/document/detail/<%= document._id %>"
+                        class="btn btn-primary badge rounded-pill"
+                        ><i class="bi bi-info-circle"></i> Detail</a
+                      >
+
+                      <% } else { %>
+                    </td>
+
+                    <td>No response yet</td>
+                    <td>
+                      <a
+                        href="/document/detail/<%= document._id %>"
+                        class="btn btn-primary badge rounded-pill"
+                        ><i class="bi bi-info-circle"></i> Detail</a
+                      >
+                    </td>
 
                     <td>
                       <form></form>
                       <form
-                        action="/document/signature_request/agree/<%= request._id %>"
+                        action="/document/signature_request/agree/<%= document._id %>"
                         method="POST"
                         class="d-inline"
                       >
@@ -178,28 +213,31 @@
                           type="submit"
                           class="btn btn-success badge rounded-pill"
                         >
-                          No response yet
+                          Agree
                         </button>
                       </form>
+
                       <form
-                        action="/document/signature_request/rejected/<%= request._id %>"
+                        action="/document/signature_request/reject/<%= document._id %>"
                         method="POST"
                         class="d-inline"
                       >
                         <button
                           type="submit"
-                          class="btn btn-success badge rounded-pill"
+                          class="btn btn-danger badge rounded-pill"
                         >
-                          Rejected
+                          Reject
                         </button>
                       </form>
                     </td>
                     <% } %>
                   </tr>
+
                   <!-- Modal -->
+
                   <div
                     class="modal fade"
-                    id="document<%= request.id_document._id %>"
+                    id="document"
                     tabindex="-1"
                     role="dialog"
                     aria-labelledby="exampleModalLabel"
@@ -223,7 +261,6 @@
                         <form
                           action="/document/signature_request/sign"
                           method="post"
-                          enctype="multipart/form-data"
                         >
                           <input type="text" name="id" id="iddoc" hidden />
                           <div class="modal-body">
@@ -233,13 +270,14 @@
                                 class="col-sm-4 col-form-label"
                                 >Digital Certificate</label
                               >
+
                               <div class="col-sm-6">
                                 <input
                                   type="text"
                                   readonly
                                   class="form-control-plaintext"
                                   id="serialnumber"
-                                  value="<%= certificate[0].serialnumber %>"
+                                  value="<%= certificatenumber %>"
                                   name="serialnumber"
                                 />
                               </div>

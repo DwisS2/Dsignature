@@ -6,11 +6,9 @@
     li.appendChild(remove)
 
     li.innerHTML +=
-      '<select name="email" class=""aria-label="Default select example"id="addInput"name="coba"><option selected>Choose a signer</option><% users.forEach((user, i) => { i++ %><option value="<%= user.email %>"><%= user.email %> (<%= user.name %>)</option><% }) %></select>'
+      '<select name="email" class=""aria-label="Default select example"id="addInput"><option selected>Choose a signer</option><% users.forEach((user, i) => { i++ %><option value="<%= user.email %>"><%= user.email %> (<%= user.name %>)</option><% }) %></select>'
     li.innerHTML +=
       '<input type="number" class="btn-icon col-sm-1 text-center" name="page" min="1" max="999" placeholder="Page" required />'
-    li.innerHTML +=
-      '<input type="number" class="btn-icon col-sm-1 text-center" name="order" min="1" max="999" placeholder="Order" />'
 
     return li
   }
@@ -25,7 +23,7 @@
         <div class="row">
           <div class="col-xxl-12">
             <div class="page__title-wrapper mt-110">
-              <h3 class="page__title">Upload & Sign Document</h3>
+              <h3 class="page__title">Upload Document</h3>
               <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
                   <li class="breadcrumb-item">
@@ -71,11 +69,7 @@
               Uploaded Document
             </a>
           </button>
-          <button class="e-btn e-btn-border col-md-2" type="submit">
-            <a href="/document/signed_document">
-              Signed Document
-            </a>
-          </button>
+
           <button class="e-btn e-btn-border col-md-2" type="submit">
             <a href="/document/signature_request">
               Signature Request
@@ -118,26 +112,30 @@
                         name="document"
                         placeholder="document"
                         id="document"
+                        required
                       />
                     </div>
                   </div>
                   <div class="mb-3 row">
                     <label for="staticEmail" class="col-sm-2 col-form-label"
-                      >Order</label
+                      >QR Code</label
                     >
                     <div class="col-sm-6">
-                      <input
-                        class="form-check-input"
-                        type="checkbox"
-                        name="isorder"
-                        value="1"
-                        id="defaultCheck1"
-                      />
-                      <label class="form-check-label" for="defaultCheck1">
-                        Signers must follow the order
-                      </label>
+                      <div class="form-check">
+                        <input
+                          class="form-check-input"
+                          type="checkbox"
+                          value="yes"
+                          id="flexCheckDefault"
+                          name="qrcode"
+                        />
+                        <label class="form-check-label" for="flexCheckDefault">
+                          Showing QR Code in document?
+                        </label>
+                      </div>
                     </div>
                   </div>
+
                   <div class="mb-3 row">
                     <label
                       for="staticEmail"

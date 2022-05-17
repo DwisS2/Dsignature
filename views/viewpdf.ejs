@@ -16,6 +16,11 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.min.css"
     />
+    <script
+      type="text/javascript"
+      src="/_next/static/chunks/qrcode.js"
+    ></script>
+
     <style>
       body {
         background-color: rgb(82, 86, 89);
@@ -119,7 +124,19 @@
       <div class="tool">
         <span>Add Signature</span>
       </div>
-
+      <input
+        id="text"
+        type="text"
+        value="localhost:5000/doc/<%= document._id %>/signer/<%= signer._id %>"
+        style="width:80%"
+        hidden
+      />
+      <input id="qrbase64" type="text" style="width:80%" hidden />
+      <div
+        id="qrcode"
+        style="width:100px; height:100px; margin-top:15px;"
+        hidden
+      ></div>
       <div class="tool">
         <button class="tool-button">
           <i
@@ -135,8 +152,8 @@
         <button class="tool-button">
           <i
             class="fa fa-qrcode"
-            title="Add an Image"
-            onclick="addImage(event)"
+            title="Add an QR Code"
+            onclick="addQrcode(event)"
           >
             QRCode</i
           >
@@ -333,7 +350,27 @@
             fabricObj.isDrawingMode = false
           })
         }
+
         fabric.Image.fromURL(`<%= signature.img %>`, function (myImg) {
+          var img1 = myImg.set({ left: 0, top: 0 })
+          // canvas.add(img1)
+          fabricObj.add(img1)
+        })
+      }
+
+      PDFAnnotate.prototype.addQrcodeToCanvas = function () {
+        var inst = this
+        var fabricObj = inst.fabricObjects[inst.active_canvas]
+        inst.active_tool = 4
+        if (inst.fabricObjects.length > 0) {
+          $.each(inst.fabricObjects, function (index, fabricObj) {
+            fabricObj.isDrawingMode = false
+          })
+        }
+
+        let inputValue = document.getElementById('qrbase64').value
+
+        fabric.Image.fromURL(inputValue, function (myImg) {
           var img1 = myImg.set({ left: 0, top: 0 })
           // canvas.add(img1)
           fabricObj.add(img1)
@@ -431,6 +468,10 @@
         event.preventDefault()
         pdf.addImageToCanvas()
       }
+      function addQrcode (event) {
+        event.preventDefault()
+        pdf.addQrcodeToCanvas()
+      }
 
       function deleteSelectedObject (event) {
         event.preventDefault()
@@ -445,6 +486,42 @@
       function clearPage () {
         pdf.clearActivePage()
       }
+    </script>
+    <script type="text/javascript">
+      var qrcode = new QRCode(document.getElementById('qrcode'), {
+        width: 100,
+        height: 100
+      })
+      var tes1 = qrcode._el.childNodes[1]
+      setTimeout(function () {
+        var qr = qrcode._el.children[1].currentSrc
+
+        $('#qrbase64').val(qr)
+      })
+
+      function makeCode () {
+        var elText = document.getElementById('text')
+
+        if (!elText.value) {
+          alert('Input a text')
+          elText.focus()
+          return
+        }
+
+        qrcode.makeCode(elText.value)
+      }
+
+      makeCode()
+
+      $('#text')
+        .on('blur', function () {
+          makeCode()
+        })
+        .on('keydown', function (e) {
+          if (e.keyCode == 13) {
+            makeCode()
+          }
+        })
     </script>
   </body>
 </html>

@@ -397,3 +397,14 @@ form holder
 .btn-icon.up:before {
   content: '\f062';
 }
+
+.navdetail {
+  border-radius: 40px;
+  border: 2px solid #15824b;
+  width: 200px;
+  text-align: center;
+}
+
+.tabeldetail {
+  text-align: left;
+}

@@ -1,28 +1,5 @@
 const mongoose = require('mongoose')
 
-const requestSchema = new mongoose.Schema({
-  email: {
-    // type: String
-    // required: true
-  },
-  sign_number: {
-    // type: String
-    // required: true
-  },
-  rejected: {
-    // type: String
-    // required: true
-  },
-  order: {
-    // type: String
-    // required: true
-  },
-  page: {
-    // type: String
-    // required: true
-  }
-})
-
 const documentSchema = new mongoose.Schema({
   id_user: {
     type: mongoose.Schema.Types.ObjectId,
@@ -32,6 +9,10 @@ const documentSchema = new mongoose.Schema({
   id_signer: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'users'
+  },
+  requestsigner: {
+    type: Array
+    // ref: 'requests'
   },
   document: {
     type: String
@@ -54,12 +35,25 @@ const documentSchema = new mongoose.Schema({
     type: String
     // required: true
   },
-  rejected: {
-    type: String
+  reject: {
+    type: Array
+    // required: true
+  },
+  agree: {
+    type: Array
+    // required: true
+  },
+  sign: {
+    type: Array
     // required: true
   },
   totalsigner: {
     type: Number
+    // required: true
+  },
+  totalreject: {
+    type: Number,
+    default: 0
     // required: true
   },
   alreadysigned: {
@@ -71,13 +65,18 @@ const documentSchema = new mongoose.Schema({
     type: String
     // required: true
   },
+  qrcode: {
+    type: String
+    // required: true
+  },
+
   timeCreated: {
     type: Date,
     default: () => Date.now()
   },
   timeSigned: {
-    type: Date,
-    default: () => Date.now()
+    type: Date
+    // default: () => Date.now()
   }
 })
 

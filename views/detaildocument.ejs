@@ -1,0 +1,165 @@
+<div id="__next">
+  <main>
+    <section
+      class="page__title-area page__title-height page__title-overlay d-flex align-items-center"
+      style="background-image:url(/img/page-title/page1.jpg)"
+    >
+      <div class="container">
+        <div class="row">
+          <div class="col-xxl-12">
+            <div class="page__title-wrapper mt-110">
+              <h3 class="page__title">Details</h3>
+              <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                  <li class="breadcrumb-item">
+                    <a href="/home">Home</a>
+                  </li>
+                  <li class="breadcrumb-item active" aria-current="page">
+                    Document
+                  </li>
+                  <li class="breadcrumb-item active" aria-current="page">
+                    Details
+                  </li>
+                </ol>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section class="cart-area pt-100 pb-100">
+      <div class="container">
+        <div class="row">
+          <div class="col-12">
+            <h3 class="hero__title">
+              <span class="yellow-shape"
+                >Document:
+                <img src="/img/shape/yellow-bg.png" alt="yellow-shape" /> </span
+              ><%= document.nm_document %>
+            </h3>
+            <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
+              <li class="nav-item">
+                <a
+                  class="nav-link active navdetail"
+                  id="pills-home-tab"
+                  data-toggle="pill"
+                  href="#pills-home"
+                  role="tab"
+                  aria-controls="pills-home"
+                  aria-selected="true"
+                  >General</a
+                >
+              </li>
+              <li class="nav-item">
+                <a
+                  class="nav-link navdetail"
+                  id="pills-profile-tab"
+                  data-toggle="pill"
+                  href="#pills-profile"
+                  role="tab"
+                  aria-controls="pills-profile"
+                  aria-selected="false"
+                  >Signer</a
+                >
+              </li>
+            </ul>
+            <div class="tab-content" id="pills-tabContent">
+              <div
+                class="tab-pane fade show active"
+                id="pills-home"
+                role="tabpanel"
+                aria-labelledby="pills-home-tab"
+              >
+                <div class="row">
+                  <div class="col-12">
+                    <form
+                      action="/document/detail/view/<%= document._id %>"
+                      method="POST"
+                      class="d-inline"
+                    >
+                      <div class="table-content table-responsive">
+                        <table class="table">
+                          <tbody class="tabeldetail">
+                            <tr>
+                              <td class="fw-bold">ID</td>
+                              <td class=""><%= document._id %></td>
+                            </tr>
+                            <tr>
+                              <td class="fw-bold">Filename</td>
+                              <td><%= document.nm_document %></td>
+                            </tr>
+
+                            <tr>
+                              <td class="fw-bold">QR Code</td>
+                              <% if(document.qrcode) { %>
+                              <td><%= document.qrcode %></td>
+                              <%} else if(!document.qrcode) { %>
+                              <td>No</td>
+                              <% } %>
+                            </tr>
+                            <tr>
+                              <td class="fw-bold">Upload Date</td>
+                              <td><%= document.timeCreated %></td>
+                            </tr>
+                            <tr>
+                              <td class="fw-bold">Signed Date</td>
+                              <td><%= document.timeSigned %></td>
+                            </tr>
+                          </tbody>
+                        </table>
+                        <br />
+
+                        <button
+                          class="e-btn e-btn-border col-md-2"
+                          type="submit"
+                        >
+                          View Document
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+              <div
+                class="tab-pane fade"
+                id="pills-profile"
+                role="tabpanel"
+                aria-labelledby="pills-profile-tab"
+              >
+                <div class="row">
+                  <div class="col-12">
+                    <form action="#">
+                      <div class="table-content table-responsive">
+                        <table class="table">
+                          <thead>
+                            <tr>
+                              <th scope="col" class="product-thumbnail">No</th>
+                              <th scope="col" class="cart-product-name">
+                                E-mail
+                              </th>
+                              <th scope="col" class="product-price">Page</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <% for (let i = 0; i < document.totalsigner; i++) {
+                            %>
+                            <tr>
+                              <td scope="row"><%= i+1 %></td>
+                              <td><%= document.requestsigner[i].email %></td>
+                              <td><%= document.requestsigner[i].page %></td>
+                            </tr>
+                            <% } %>
+                          </tbody>
+                        </table>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
