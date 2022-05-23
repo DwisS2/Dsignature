@@ -20,20 +20,7 @@ openFile.addEventListener('click', () => {
   input.click()
 })
 
-// input.addEventListener('change', event => {
-//   const inputFile = event.target.files[0]
-//   if (inputFile.type == 'application/pdf') {
-//     const reader = new FileReader()
-//     console.log(inputFile)
-//     reader.readAsDataURL(inputFile)
-//     reader.onload = () => {
-//       loadPDF(reader.result)
-//       zoomButton.disabled = false
-//     }
-//   } else {
-//     alert('The file you are trying to open is not a pdf file!')
-//   }
-// })
+
 loadPDF('data:application/pdf;base64,' + tes2)
 
 zoomButton.disabled = false

@@ -408,3 +408,7 @@ form holder
 .tabeldetail {
   text-align: left;
 }
+
+.judultabel {
+  text-align-last: center;
+}

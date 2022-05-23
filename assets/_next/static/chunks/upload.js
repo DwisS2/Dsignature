@@ -1,13 +1,10 @@
-const verifyPDF = require('@ninja-labs/verify-pdf')
-const { getCertificatesInfoFromPDF } = require('@ninja-labs/verify-pdf')
+
 
 function readURL (input) {
   if (input.files && input.files[0]) {
     var reader = new FileReader()
 
-    // const { verified, authenticity, integrity, expired, meta } = verifyPDF(
-    //   reader
-    // )
+
 
     reader.onload = function (e) {
       $('.image-upload-wrap').hide()

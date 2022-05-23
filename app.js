@@ -469,12 +469,14 @@ app.get('/document/upload/:_id', async (req, res) => {
   if (req.session.user && req.cookies.user_sid) {
     const document = await Document.findOne({ _id: req.params._id })
     const signature = await Signature.findOne({ id_user: req.session.user._id })
+    const signer = await User.findOne({ _id: req.session.user._id })
 
     res.render('viewpdfupload', {
       title: 'Digital Signature',
       layout: 'layouts/teslayout.ejs',
       document,
       signature,
+      signer,
       pdf: 'data:application/pdf;base64,' + document.document
     })
   } else {
