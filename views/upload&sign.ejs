@@ -140,6 +140,7 @@
                         class="form-control"
                         id="certificate_password"
                         readonly
+                        required
                       />
                       <% } else { %>
                       <input
@@ -149,6 +150,7 @@
                         class="form-control"
                         minlength="8"
                         id="certificate_password"
+                        required
                       />
                       <% } %>
                     </div>
@@ -163,6 +165,8 @@
                         name="document"
                         placeholder="document"
                         id="document"
+                        required
+                        accept="application/pdf"
                       />
                     </div>
                   </div>

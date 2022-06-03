@@ -106,7 +106,7 @@ app.use(express.urlencoded({ limit: '5mb', extended: true }))
 
 // app.use(getRouter)
 app.get('/index', sessionChecker, (req, res) => {
-  res.render('index', { layout: 'layouts/main-layout', title: 'Digital Sign' })
+  res.render('index', { layout: 'layouts/main-layout', title: 'Digital Sign', msg: req.flash('msg') })
 })
 
 app.get('/signin', sessionChecker, (req, res) => {
@@ -195,6 +195,7 @@ app.get('/document', async (req, res) => {
         id_user: req.session.user._id
       })
       .sort({ timeCreated: -1 })
+
 
     if (documents.length === 0) {
       res.render('dokumen', {
@@ -401,7 +402,8 @@ app.get('/verifikasi2', (req, res) => {
   if (req.session.user && req.cookies.user_sid) {
     res.render('verifikasi', {
       layout: 'layouts/main-layout-login',
-      title: 'Digital Sign'
+      title: 'Digital Sign',
+      msg: req.flash('msg')
     })
   } else {
     res.redirect('/signin')
@@ -511,80 +513,80 @@ app.put('/savepdfsign', async (req, res) => {
 
     const p12Buffer = certificates[0].certificate_buffer
     const SIGNATURE_LENGTH = 4322
-    ;(async () => {
-      const pdfDoc = await PDFDocument.load(pdfBuffer)
-      const pages = pdfDoc.getPages()
-      const firstPage = pages[pages.length - 1]
-      const ByteRange = PDFArrayCustom.withContext(pdfDoc.context)
-      ByteRange.push(PDFNumber.of(0))
-      ByteRange.push(PDFName.of(signer.DEFAULT_BYTE_RANGE_PLACEHOLDER))
-      ByteRange.push(PDFName.of(signer.DEFAULT_BYTE_RANGE_PLACEHOLDER))
-      ByteRange.push(PDFName.of(signer.DEFAULT_BYTE_RANGE_PLACEHOLDER))
-      const signatureDict = pdfDoc.context.obj({
-        Type: 'Sig',
-        Filter: 'Adobe.PPKLite',
-        SubFilter: 'adbe.pkcs7.detached',
-        ByteRange,
-        Contents: PDFHexString.of('A'.repeat(SIGNATURE_LENGTH)),
-        Reason: PDFString.of('We need your signature for reasons...'),
-        M: PDFString.fromDate(new Date())
-      })
-      const signatureDictRef = pdfDoc.context.register(signatureDict)
-      const widgetDict = pdfDoc.context.obj({
-        Type: 'Annot',
-        Subtype: 'Widget',
-        FT: 'Sig',
-        Rect: [0, 0, 0, 0],
-        V: signatureDictRef,
-        T: PDFString.of('Signature1'),
-        F: 4,
-        P: pages[0].ref
-      })
-      const widgetDictRef = pdfDoc.context.register(widgetDict)
-      // Add our signature widget to the first page
-      pages[0].node.set(
-        PDFName.of('Annots'),
-        pdfDoc.context.obj([widgetDictRef])
-      )
-      // Create an AcroForm object containing our signature widget
-      pdfDoc.catalog.set(
-        PDFName.of('AcroForm'),
-        pdfDoc.context.obj({
-          SigFlags: 3,
-          Fields: [widgetDictRef]
+      ; (async () => {
+        const pdfDoc = await PDFDocument.load(pdfBuffer)
+        const pages = pdfDoc.getPages()
+        const firstPage = pages[pages.length - 1]
+        const ByteRange = PDFArrayCustom.withContext(pdfDoc.context)
+        ByteRange.push(PDFNumber.of(0))
+        ByteRange.push(PDFName.of(signer.DEFAULT_BYTE_RANGE_PLACEHOLDER))
+        ByteRange.push(PDFName.of(signer.DEFAULT_BYTE_RANGE_PLACEHOLDER))
+        ByteRange.push(PDFName.of(signer.DEFAULT_BYTE_RANGE_PLACEHOLDER))
+        const signatureDict = pdfDoc.context.obj({
+          Type: 'Sig',
+          Filter: 'Adobe.PPKLite',
+          SubFilter: 'adbe.pkcs7.detached',
+          ByteRange,
+          Contents: PDFHexString.of('A'.repeat(SIGNATURE_LENGTH)),
+          Reason: PDFString.of('We need your signature for reasons...'),
+          M: PDFString.fromDate(new Date())
         })
-      )
-      const modifiedPdfBytes = await pdfDoc.save({ useObjectStreams: false })
-      const modifiedPdfBuffer = Buffer.from(modifiedPdfBytes)
-      const signObj = new signer.SignPdf()
-      const signedPdfBuffer = signObj.sign(modifiedPdfBuffer, p12Buffer, {
-        passphrase: certificates[0].certificate_password
-      })
-      const pdf = signedPdfBuffer.toString('base64') //PDF WORKS
+        const signatureDictRef = pdfDoc.context.register(signatureDict)
+        const widgetDict = pdfDoc.context.obj({
+          Type: 'Annot',
+          Subtype: 'Widget',
+          FT: 'Sig',
+          Rect: [0, 0, 0, 0],
+          V: signatureDictRef,
+          T: PDFString.of('Signature1'),
+          F: 4,
+          P: pages[0].ref
+        })
+        const widgetDictRef = pdfDoc.context.register(widgetDict)
+        // Add our signature widget to the first page
+        pages[0].node.set(
+          PDFName.of('Annots'),
+          pdfDoc.context.obj([widgetDictRef])
+        )
+        // Create an AcroForm object containing our signature widget
+        pdfDoc.catalog.set(
+          PDFName.of('AcroForm'),
+          pdfDoc.context.obj({
+            SigFlags: 3,
+            Fields: [widgetDictRef]
+          })
+        )
+        const modifiedPdfBytes = await pdfDoc.save({ useObjectStreams: false })
+        const modifiedPdfBuffer = Buffer.from(modifiedPdfBytes)
+        const signObj = new signer.SignPdf()
+        const signedPdfBuffer = signObj.sign(modifiedPdfBuffer, p12Buffer, {
+          passphrase: certificates[0].certificate_password
+        })
+        const pdf = signedPdfBuffer.toString('base64') //PDF WORKS
 
-      try {
-        Document.updateOne(
-          { _id: req.body._id },
-          {
-            $set: {
-              document: pdf,
+        try {
+          Document.updateOne(
+            { _id: req.body._id },
+            {
+              $set: {
+                document: pdf,
 
-              id_signer: req.session.user._id,
-              timeSigned: Date.now(),
-              sign: [req.session.user.email],
-              alreadysigned: 1,
-              agree: [req.session.user.email]
+                id_signer: req.session.user._id,
+                timeSigned: Date.now(),
+                sign: [req.session.user.email],
+                alreadysigned: 1,
+                agree: [req.session.user.email]
+              }
             }
-          }
-        ).then(result => {
-          req.flash('msg', 'Document successfully signed!')
-          res.redirect('/document')
-        })
-      } catch (error) {
-        console.log(error)
-        res.redirect('/document/upload&sign/:_id')
-      }
-    })()
+          ).then(result => {
+            req.flash('msg', 'Document successfully signed!')
+            res.redirect('/document')
+          })
+        } catch (error) {
+          console.log(error)
+          res.redirect('/document/upload&sign/:_id')
+        }
+      })()
   } else {
     res.redirect('/signin')
   }
@@ -611,194 +613,194 @@ app.put('/savepdfsign2', async (req, res) => {
 
     const SIGNATURE_LENGTH = 4322
 
-    ;(async () => {
-      const pdfDoc = await PDFDocument.load(pdfBuffer)
-      const pages = pdfDoc.getPages()
-      const firstPage = pages[pages.length - 1]
+      ; (async () => {
+        const pdfDoc = await PDFDocument.load(pdfBuffer)
+        const pages = pdfDoc.getPages()
+        const firstPage = pages[pages.length - 1]
 
-      const ByteRange = PDFArrayCustom.withContext(pdfDoc.context)
-      ByteRange.push(PDFNumber.of(0))
-      ByteRange.push(PDFName.of(signer.DEFAULT_BYTE_RANGE_PLACEHOLDER))
-      ByteRange.push(PDFName.of(signer.DEFAULT_BYTE_RANGE_PLACEHOLDER))
-      ByteRange.push(PDFName.of(signer.DEFAULT_BYTE_RANGE_PLACEHOLDER))
+        const ByteRange = PDFArrayCustom.withContext(pdfDoc.context)
+        ByteRange.push(PDFNumber.of(0))
+        ByteRange.push(PDFName.of(signer.DEFAULT_BYTE_RANGE_PLACEHOLDER))
+        ByteRange.push(PDFName.of(signer.DEFAULT_BYTE_RANGE_PLACEHOLDER))
+        ByteRange.push(PDFName.of(signer.DEFAULT_BYTE_RANGE_PLACEHOLDER))
 
-      const signatureDict = pdfDoc.context.obj({
-        Type: 'Sig',
-        Filter: 'Adobe.PPKLite',
-        SubFilter: 'adbe.pkcs7.detached',
-        ByteRange,
-        Contents: PDFHexString.of('A'.repeat(SIGNATURE_LENGTH)),
-        Reason: PDFString.of('We need your signature for reasons...'),
-        M: PDFString.fromDate(new Date())
-      })
-
-      const signatureDictRef = pdfDoc.context.register(signatureDict)
-
-      const widgetDict = pdfDoc.context.obj({
-        Type: 'Annot',
-        Subtype: 'Widget',
-        FT: 'Sig',
-        Rect: [0, 0, 0, 0],
-
-        V: signatureDictRef,
-        T: PDFString.of('Signature1'),
-        F: 4,
-        P: pages[0].ref
-      })
-      const widgetDictRef = pdfDoc.context.register(widgetDict)
-
-      // Add our signature widget to the first page
-      pages[0].node.set(
-        PDFName.of('Annots'),
-        pdfDoc.context.obj([widgetDictRef])
-      )
-
-      // Create an AcroForm object containing our signature widget
-      pdfDoc.catalog.set(
-        PDFName.of('AcroForm'),
-        pdfDoc.context.obj({
-          SigFlags: 3,
-          Fields: [widgetDictRef]
+        const signatureDict = pdfDoc.context.obj({
+          Type: 'Sig',
+          Filter: 'Adobe.PPKLite',
+          SubFilter: 'adbe.pkcs7.detached',
+          ByteRange,
+          Contents: PDFHexString.of('A'.repeat(SIGNATURE_LENGTH)),
+          Reason: PDFString.of('We need your signature for reasons...'),
+          M: PDFString.fromDate(new Date())
         })
-      )
 
-      const modifiedPdfBytes = await pdfDoc.save({ useObjectStreams: false })
-      const modifiedPdfBuffer = Buffer.from(modifiedPdfBytes)
+        const signatureDictRef = pdfDoc.context.register(signatureDict)
 
-      const signObj = new signer.SignPdf()
-      const signedPdfBuffer = signObj.sign(modifiedPdfBuffer, p12Buffer, {
-        passphrase: certificates[0].certificate_password
-      })
-      const pdf = signedPdfBuffer.toString('base64') //PDF WORKS
-      try {
-        const emailsign = documents[0].sign[0]
-        const emailsign1 = documents[0].sign[1]
-        const emailsign2 = documents[0].sign[2]
-        const emailsign3 = documents[0].sign[3]
-        const emailsign4 = documents[0].sign[4]
-        const emailsign5 = documents[0].sign[5]
-        const signuser = documents[0].alreadysigned
-        if (!emailsign) {
-          Document.updateOne(
-            { _id: req.body._id },
-            {
-              $set: {
-                document: pdf,
+        const widgetDict = pdfDoc.context.obj({
+          Type: 'Annot',
+          Subtype: 'Widget',
+          FT: 'Sig',
+          Rect: [0, 0, 0, 0],
 
-                id_signer: req.session.user._id,
-                timeSigned: Date.now(),
-                sign: [req.session.user.email],
-                alreadysigned: signuser + 1
-              }
-            }
-          ).then(result => {
-            req.flash('msg', 'Document has been signed successfully')
-            res.redirect('/document/signature_request')
+          V: signatureDictRef,
+          T: PDFString.of('Signature1'),
+          F: 4,
+          P: pages[0].ref
+        })
+        const widgetDictRef = pdfDoc.context.register(widgetDict)
+
+        // Add our signature widget to the first page
+        pages[0].node.set(
+          PDFName.of('Annots'),
+          pdfDoc.context.obj([widgetDictRef])
+        )
+
+        // Create an AcroForm object containing our signature widget
+        pdfDoc.catalog.set(
+          PDFName.of('AcroForm'),
+          pdfDoc.context.obj({
+            SigFlags: 3,
+            Fields: [widgetDictRef]
           })
-        } else if (!emailsign1) {
-          Document.updateOne(
-            { _id: req.body._id },
-            {
-              $set: {
-                document: pdf,
-                id_signer: req.session.user._id,
-                timeSigned: Date.now(),
-                sign: [emailsign, req.session.user.email],
-                alreadysigned: signuser + 1
+        )
+
+        const modifiedPdfBytes = await pdfDoc.save({ useObjectStreams: false })
+        const modifiedPdfBuffer = Buffer.from(modifiedPdfBytes)
+
+        const signObj = new signer.SignPdf()
+        const signedPdfBuffer = signObj.sign(modifiedPdfBuffer, p12Buffer, {
+          passphrase: certificates[0].certificate_password
+        })
+        const pdf = signedPdfBuffer.toString('base64') //PDF WORKS
+        try {
+          const emailsign = documents[0].sign[0]
+          const emailsign1 = documents[0].sign[1]
+          const emailsign2 = documents[0].sign[2]
+          const emailsign3 = documents[0].sign[3]
+          const emailsign4 = documents[0].sign[4]
+          const emailsign5 = documents[0].sign[5]
+          const signuser = documents[0].alreadysigned
+          if (!emailsign) {
+            Document.updateOne(
+              { _id: req.body._id },
+              {
+                $set: {
+                  document: pdf,
+
+                  id_signer: req.session.user._id,
+                  timeSigned: Date.now(),
+                  sign: [req.session.user.email],
+                  alreadysigned: signuser + 1
+                }
               }
-            }
-          ).then(result => {
-            req.flash('msg', 'Document has been signed successfully')
-            res.redirect('/document/signature_request')
-          })
-        } else if (!emailsign2) {
-          Document.updateOne(
-            { _id: req.body._id },
-            {
-              $set: {
-                document: pdf,
-                id_signer: req.session.user._id,
-                timeSigned: Date.now(),
-                sign: [emailsign, emailsign1, req.session.user.email],
-                alreadysigned: signuser + 1
+            ).then(result => {
+              req.flash('msg', 'Document has been signed successfully')
+              res.redirect('/document/signature_request')
+            })
+          } else if (!emailsign1) {
+            Document.updateOne(
+              { _id: req.body._id },
+              {
+                $set: {
+                  document: pdf,
+                  id_signer: req.session.user._id,
+                  timeSigned: Date.now(),
+                  sign: [emailsign, req.session.user.email],
+                  alreadysigned: signuser + 1
+                }
               }
-            }
-          ).then(result => {
-            req.flash('msg', 'Document has been signed successfully')
-            res.redirect('/document/signature_request')
-          })
-        } else if (!emailsign3) {
-          Document.updateOne(
-            { _id: req.body._id },
-            {
-              $set: {
-                document: pdf,
-                id_signer: req.session.user._id,
-                timeSigned: Date.now(),
-                sign: [
-                  emailsign,
-                  emailsign1,
-                  emailsign2,
-                  req.session.user.email
-                ],
-                alreadysigned: signuser + 1
+            ).then(result => {
+              req.flash('msg', 'Document has been signed successfully')
+              res.redirect('/document/signature_request')
+            })
+          } else if (!emailsign2) {
+            Document.updateOne(
+              { _id: req.body._id },
+              {
+                $set: {
+                  document: pdf,
+                  id_signer: req.session.user._id,
+                  timeSigned: Date.now(),
+                  sign: [emailsign, emailsign1, req.session.user.email],
+                  alreadysigned: signuser + 1
+                }
               }
-            }
-          ).then(result => {
-            req.flash('msg', 'Document has been signed successfully')
-            res.redirect('/document/signature_request')
-          })
-        } else if (!emailsign4) {
-          Document.updateOne(
-            { _id: req.body._id },
-            {
-              $set: {
-                document: pdf,
-                id_signer: req.session.user._id,
-                timeSigned: Date.now(),
-                sign: [
-                  emailsign,
-                  emailsign1,
-                  emailsign2,
-                  emailsign3,
-                  req.session.user.email
-                ],
-                alreadysigned: signuser + 1
+            ).then(result => {
+              req.flash('msg', 'Document has been signed successfully')
+              res.redirect('/document/signature_request')
+            })
+          } else if (!emailsign3) {
+            Document.updateOne(
+              { _id: req.body._id },
+              {
+                $set: {
+                  document: pdf,
+                  id_signer: req.session.user._id,
+                  timeSigned: Date.now(),
+                  sign: [
+                    emailsign,
+                    emailsign1,
+                    emailsign2,
+                    req.session.user.email
+                  ],
+                  alreadysigned: signuser + 1
+                }
               }
-            }
-          ).then(result => {
-            req.flash('msg', 'Document has been signed successfully')
-            res.redirect('/document/signature_request')
-          })
-        } else if (!emailsign5) {
-          Document.updateOne(
-            { _id: req.body._id },
-            {
-              $set: {
-                document: pdf,
-                id_signer: req.session.user._id,
-                timeSigned: Date.now(),
-                sign: [
-                  emailsign,
-                  emailsign1,
-                  emailsign2,
-                  emailsign3,
-                  emailsign4,
-                  req.session.user.email
-                ],
-                alreadysigned: signuser + 1
+            ).then(result => {
+              req.flash('msg', 'Document has been signed successfully')
+              res.redirect('/document/signature_request')
+            })
+          } else if (!emailsign4) {
+            Document.updateOne(
+              { _id: req.body._id },
+              {
+                $set: {
+                  document: pdf,
+                  id_signer: req.session.user._id,
+                  timeSigned: Date.now(),
+                  sign: [
+                    emailsign,
+                    emailsign1,
+                    emailsign2,
+                    emailsign3,
+                    req.session.user.email
+                  ],
+                  alreadysigned: signuser + 1
+                }
               }
-            }
-          ).then(result => {
-            req.flash('msg', 'Document has been signed successfully')
-            res.redirect('/document/signature_request')
-          })
+            ).then(result => {
+              req.flash('msg', 'Document has been signed successfully')
+              res.redirect('/document/signature_request')
+            })
+          } else if (!emailsign5) {
+            Document.updateOne(
+              { _id: req.body._id },
+              {
+                $set: {
+                  document: pdf,
+                  id_signer: req.session.user._id,
+                  timeSigned: Date.now(),
+                  sign: [
+                    emailsign,
+                    emailsign1,
+                    emailsign2,
+                    emailsign3,
+                    emailsign4,
+                    req.session.user.email
+                  ],
+                  alreadysigned: signuser + 1
+                }
+              }
+            ).then(result => {
+              req.flash('msg', 'Document has been signed successfully')
+              res.redirect('/document/signature_request')
+            })
+          }
+        } catch (error) {
+          console.log(error)
+          res.redirect('/document/signature_request')
         }
-      } catch (error) {
-        console.log(error)
-        res.redirect('/document/signature_request')
-      }
-    })()
+      })()
   } else {
     res.redirect('/signin')
   }
@@ -853,163 +855,165 @@ app.post('/document/upload&sign', async (req, res) => {
 })
 
 app.post('/document/upload', async (req, res) => {
-  console.log(req.body.page.length)
+
   if (req.session.user && req.cookies.user_sid) {
-    try {
-      const user_id = req.session.user._id
-      const base64document = req.files.document.data.toString('base64')
-      const nama_document = req.files.document.name
+    if (req.body.page === undefined) {
+      req.flash(
+        'msg',
+        'Please select the signer first'
+      )
+      res.redirect('/document/upload')
+    } else if (req.body.email === 'Choose a signer') {
+      req.flash(
+        'msg',
+        'Please select the signer first'
+      )
+      res.redirect('/document/upload')
+    } else {
+      try {
+        const user_id = req.session.user._id
+        const base64document = req.files.document.data.toString('base64')
+        const nama_document = req.files.document.name
 
-      if (req.body.page.length == 2) {
-        const document = new Document({
-          id_user: user_id,
-          document: base64document,
-          nm_document: nama_document,
-          qrcode: req.body.qrcode,
-          totalsigner: req.body.page.length,
-          agree: [''],
-          sign: [''],
-          requestsigner: [
-            {
-              page: req.body.page[0],
+        if (req.body.page.length == 2) {
+          const document = new Document({
+            id_user: user_id,
+            document: base64document,
+            nm_document: nama_document,
+            totalsigner: req.body.page.length,
+            requestsigner: [
+              {
+                page: req.body.page[0],
 
-              email: req.body.email[0]
-            },
-            {
-              page: req.body.page[1],
+                email: req.body.email[0]
+              },
+              {
+                page: req.body.page[1],
 
-              email: req.body.email[1]
+                email: req.body.email[1]
+              }
+            ]
+          })
+          await document.save()
+        } else if (req.body.page.length == 3) {
+          const document = new Document({
+            id_user: user_id,
+            document: base64document,
+            nm_document: nama_document,
+            totalsigner: req.body.page.length,
+            requestsigner: [
+              {
+                page: req.body.page[0],
+
+                email: req.body.email[0]
+              },
+              {
+                page: req.body.page[1],
+
+                email: req.body.email[1]
+              },
+              {
+                page: req.body.page[2],
+
+                email: req.body.email[2]
+              }
+            ]
+          })
+          await document.save()
+        } else if (req.body.page.length == 4) {
+          const document = new Document({
+            id_user: user_id,
+            document: base64document,
+            nm_document: nama_document,
+            totalsigner: req.body.page.length,
+            requestsigner: [
+              {
+                page: req.body.page[0],
+
+                email: req.body.email[0]
+              },
+              {
+                page: req.body.page[1],
+
+                email: req.body.email[1]
+              },
+              {
+                page: req.body.page[2],
+
+                email: req.body.email[2]
+              },
+              {
+                page: req.body.page[3],
+
+                email: req.body.email[3]
+              }
+            ]
+          })
+          await document.save()
+        } else if (req.body.page.length == 5) {
+          const document = new Document({
+            id_user: user_id,
+            document: base64document,
+            nm_document: nama_document,
+            totalsigner: req.body.page.length,
+            requestsigner: [
+              {
+                page: req.body.page[0],
+
+                email: req.body.email[0]
+              },
+              {
+                page: req.body.page[1],
+
+                email: req.body.email[1]
+              },
+              {
+                page: req.body.page[2],
+
+                email: req.body.email[2]
+              },
+              {
+                page: req.body.page[3],
+
+                email: req.body.email[3]
+              },
+              {
+                page: req.body.page[4],
+
+                email: req.body.email[4]
+              }
+            ]
+          })
+          await document.save()
+        } else if (req.body.page.length > 5) {
+          req.flash(
+            'msg',
+            'Signature image added successfullyThe maximum limit for signing is five.'
+          )
+          res.redirect('/document/upload')
+        } else if (req.body.page.length == 1) {
+          const document = new Document({
+            id_user: user_id,
+            document: base64document,
+            nm_document: nama_document,
+            totalsigner: req.body.page.length,
+            requestsigner: {
+              page: req.body.page,
+
+              email: req.body.email
             }
-          ]
-        })
-        await document.save()
-      } else if (req.body.page.length == 3) {
-        const document = new Document({
-          id_user: user_id,
-          document: base64document,
-          nm_document: nama_document,
-          qrcode: req.body.qrcode,
-          totalsigner: req.body.page.length,
-          agree: [''],
-          sign: [''],
-          requestsigner: [
-            {
-              page: req.body.page[0],
-
-              email: req.body.email[0]
-            },
-            {
-              page: req.body.page[1],
-
-              email: req.body.email[1]
-            },
-            {
-              page: req.body.page[2],
-
-              email: req.body.email[2]
-            }
-          ]
-        })
-        await document.save()
-      } else if (req.body.page.length == 4) {
-        const document = new Document({
-          id_user: user_id,
-          document: base64document,
-          nm_document: nama_document,
-          qrcode: req.body.qrcode,
-          totalsigner: req.body.page.length,
-          agree: [''],
-          sign: [''],
-          requestsigner: [
-            {
-              page: req.body.page[0],
-
-              email: req.body.email[0]
-            },
-            {
-              page: req.body.page[1],
-
-              email: req.body.email[1]
-            },
-            {
-              page: req.body.page[2],
-
-              email: req.body.email[2]
-            },
-            {
-              page: req.body.page[3],
-
-              email: req.body.email[3]
-            }
-          ]
-        })
-        await document.save()
-      } else if (req.body.page.length == 5) {
-        const document = new Document({
-          id_user: user_id,
-          document: base64document,
-          nm_document: nama_document,
-          qrcode: req.body.qrcode,
-          totalsigner: req.body.page.length,
-          agree: [''],
-          sign: [''],
-          requestsigner: [
-            {
-              page: req.body.page[0],
-
-              email: req.body.email[0]
-            },
-            {
-              page: req.body.page[1],
-
-              email: req.body.email[1]
-            },
-            {
-              page: req.body.page[2],
-
-              email: req.body.email[2]
-            },
-            {
-              page: req.body.page[3],
-
-              email: req.body.email[3]
-            },
-            {
-              page: req.body.page[4],
-
-              email: req.body.email[4]
-            }
-          ]
-        })
-        await document.save()
-      } else if (req.body.page.length > 5) {
+          })
+          await document.save()
+        }
         req.flash(
           'msg',
-          'Signature image added successfullyThe maximum limit for signing is five.'
+          'The document has been uploaded successfully'
         )
+        res.redirect('/document')
+      } catch (error) {
+        console.log(error)
         res.redirect('/document/upload')
-      } else if (req.body.page.length == 1) {
-        const document = new Document({
-          id_user: user_id,
-          document: base64document,
-          nm_document: nama_document,
-          qrcode: req.body.qrcode,
-          totalsigner: req.body.page.length,
-          agree: '',
-          sign: '',
-          requestsigner: {
-            page: req.body.page,
-
-            email: req.body.email
-          }
-        })
-        await document.save()
       }
-
-      res.redirect('/document')
-    } catch (error) {
-      console.log(error)
-      res.redirect('/document/upload')
     }
   } else {
     res.redirect('/signin')
@@ -1017,23 +1021,33 @@ app.post('/document/upload', async (req, res) => {
 })
 
 app.post('/signature', async (req, res) => {
+
   if (req.session.user && req.cookies.user_sid) {
-    const dataImagePrefix = 'data:image/png;base64,'
-    const signaturetype = req.files.file.data
-    const base64 = dataImagePrefix + signaturetype.toString('base64')
 
     const user_id = req.session.user._id
-    try {
-      const signature = new Signature({
-        id_user: user_id,
-        img: base64
-      })
-      await signature.save()
-      req.flash('msg', 'Signature image added successfully!')
+    if (!req.files) {
+      req.flash('msg', 'The signature is still empty')
       res.redirect('/signature')
-    } catch (error) {
-      console.log(error)
+    } else if (req.files.file.mimetype != 'image/png') {
+      req.flash('msg', 'File format must be PNG')
       res.redirect('/signature')
+    } else {
+      const dataImagePrefix = 'data:image/png;base64,'
+      const signaturetype = req.files.file.data
+      const base64 = dataImagePrefix + signaturetype.toString('base64')
+
+      try {
+        const signature = new Signature({
+          id_user: user_id,
+          img: base64
+        })
+        await signature.save()
+        req.flash('msg', 'Signature image added successfully!')
+        res.redirect('/signature')
+      } catch (error) {
+        console.log(error)
+        res.redirect('/signature')
+      }
     }
   } else {
     res.redirect('/signin')
@@ -1080,10 +1094,10 @@ app.post('/digitalsignature/createcertificate', async (req, res) => {
         'test',
         '-dname',
         'CN=' +
-          nama +
-          ', OU=SMAN 90 Jakarta Selatan, EMAILADDRESS=' +
-          email +
-          ', O=SMAN 90 Jakarta Selatan, L=Jakarta Selatan, S=Jakarta Selatan, C=ID',
+        nama +
+        ', OU=SMAN 90 Jakarta Selatan, EMAILADDRESS=' +
+        email +
+        ', O=SMAN 90 Jakarta Selatan, L=Jakarta Selatan, S=Jakarta Selatan, C=ID',
         '-keyalg',
         'RSA',
         '-keysize',
@@ -1141,8 +1155,8 @@ app.post('/digitalsignature/createcertificate', async (req, res) => {
           // if no error, file has been deleted successfully
           console.log('File deleted!')
         })
+        res.redirect('/digitalcertificate')
       }, 10000)
-      res.redirect('/digitalcertificate')
     } catch (error) {
       console.log(error)
       res.redirect('/digitalsignature/createcertificate')
@@ -1155,106 +1169,120 @@ app.post('/digitalsignature/createcertificate', async (req, res) => {
 app.post('/hasilverifikasi', sessionChecker, (req, res) => {
   namapdf = req.files.file.name
   bufferpdf = req.files.file.data
+  if (req.files.file.mimetype != 'application/pdf') {
+    req.flash('msg', 'The selected file must be in PDF format!')
+    res.redirect('/index')
+  } else {
+    const { verified, authenticity, integrity, expired, meta } = verifyPDF(
+      bufferpdf
+    )
+    if (!integrity) {
+      hasilpdf = 'The document does not have a digital signature'
+    } else if (
+      meta.certs[0].issuedTo.organizationName == 'SMAN 90 Jakarta Selatan'
+    ) {
+      hasilpdf = 'Digital signature on valid document'
+    } else if (integrity == false) {
+      hasilpdf = 'The document is not valid because it has been changed'
+    } else {
+      hasilpdf =
+        'The digital signature is valid but not issued by the SMAN 90 Jakarta system'
+    }
+    if (!integrity) {
+      namapenandatangan = ' '
+    } else {
+      namapenandatangan = meta.certs[0].issuedTo.commonName
+    }
+    if (!integrity) {
+      emailpenandatangan = ' '
+    } else {
+      emailpenandatangan = meta.certs[0].issuedTo.emailAddress
+    }
+    if (!integrity) {
+      lokasi = ' '
+    } else {
+      lokasi = meta.certs[0].issuedTo.localityName
+    }
+    if (!integrity) {
+      organisasi = ' '
+    } else {
+      organisasi = meta.certs[0].issuedTo.organizationName
+    }
+    if (!integrity) {
+      integritas = ' '
+    } else if (integrity == true) {
+      integritas = 'Documents have not changed'
+    } else {
+      integritas = 'Documents have not changed'
+    }
 
-  const { verified, authenticity, integrity, expired, meta } = verifyPDF(
-    bufferpdf
-  )
-  if (!integrity) {
-    hasilpdf = 'Dokumen tidak memiliki tanda tangan digital'
-  } else if (
-    meta.certs[0].issuedTo.organizationName == 'SMAN 90 Jakarta Selatan'
-  ) {
-    hasilpdf = 'Tanda tangan digital pada dokumen valid'
-  } else if (integrity == false) {
-    hasilpdf = 'Dokumen tidak valid karna telah mengalami perubahan'
-  } else {
-    hasilpdf =
-      'Tanda tangan digital valid namun bukan dikeluarkan oleh sistem SMAN 90 Jakarta'
+    res.render('hasilverifikasi', {
+      layout: 'layouts/main-layout',
+      title: 'Digital Sign'
+    })
   }
-  if (!integrity) {
-    namapenandatangan = ' '
-  } else {
-    namapenandatangan = meta.certs[0].issuedTo.commonName
-  }
-  if (!integrity) {
-    emailpenandatangan = ' '
-  } else {
-    emailpenandatangan = meta.certs[0].issuedTo.emailAddress
-  }
-  if (!integrity) {
-    lokasi = ' '
-  } else {
-    lokasi = meta.certs[0].issuedTo.localityName
-  }
-  if (!integrity) {
-    organisasi = ' '
-  } else {
-    organisasi = meta.certs[0].issuedTo.organizationName
-  }
-  if (!integrity) {
-    integritas = ' '
-  } else if (integrity == true) {
-    integritas = 'Dokumen tidak mengalami perubahan'
-  } else {
-    integritas = 'Dokumen telah mengalami perubahan'
-  }
-
-  res.render('hasilverifikasi', {
-    layout: 'layouts/main-layout',
-    title: 'Digital Sign'
-  })
 })
 app.post('/hasilverifikasi2', (req, res) => {
-  namapdf = req.files.file.name
-  bufferpdf = req.files.file.data
+  if (req.session.user && req.cookies.user_sid) {
+    namapdf = req.files.file.name
+    bufferpdf = req.files.file.data
 
-  const { verified, authenticity, integrity, expired, meta } = verifyPDF(
-    bufferpdf
-  )
-  if (!integrity) {
-    hasilpdf = 'Dokumen tidak memiliki tanda tangan digital'
-  } else if (
-    meta.certs[0].issuedTo.organizationName == 'SMAN 90 Jakarta Selatan'
-  ) {
-    hasilpdf = 'Tanda tangan digital pada dokumen valid'
-  } else if (integrity == false) {
-    hasilpdf = 'Dokumen tidak valid karna telah mengalami perubahan'
-  } else {
-    hasilpdf =
-      'Tanda tangan digital valid namun bukan dikeluarkan oleh sistem SMAN 90 Jakarta'
-  }
-  if (!integrity) {
-    namapenandatangan = ' '
-  } else {
-    namapenandatangan = meta.certs[0].issuedTo.commonName
-  }
-  if (!integrity) {
-    emailpenandatangan = ' '
-  } else {
-    emailpenandatangan = meta.certs[0].issuedTo.emailAddress
-  }
-  if (!integrity) {
-    lokasi = ' '
-  } else {
-    lokasi = meta.certs[0].issuedTo.localityName
-  }
-  if (!integrity) {
-    organisasi = ' '
-  } else {
-    organisasi = meta.certs[0].issuedTo.organizationName
-  }
-  if (!integrity) {
-    integritas = ' '
-  } else if (integrity == true) {
-    integritas = 'Dokumen tidak mengalami perubahan'
-  } else {
-    integritas = 'Dokumen telah mengalami perubahan'
-  }
+    if (req.files.file.mimetype != 'application/pdf') {
+      req.flash('msg', 'The selected file must be in PDF format!')
+      res.redirect('/verifikasi2')
+    } else {
 
-  res.render('hasilverifikasi', {
-    layout: 'layouts/main-layout-login',
-    title: 'Digital Sign'
-  })
+      const { verified, authenticity, integrity, expired, meta } = verifyPDF(
+        bufferpdf
+      )
+      if (!integrity) {
+        hasilpdf = 'The document does not have a digital signature'
+      } else if (
+        meta.certs[0].issuedTo.organizationName == 'SMAN 90 Jakarta Selatan'
+      ) {
+        hasilpdf = 'Digital signature on valid document'
+      } else if (integrity == false) {
+        hasilpdf = 'The document is not valid because it has been changed'
+      } else {
+        hasilpdf =
+          'The digital signature is valid but not issued by the SMAN 90 Jakarta system'
+      }
+      if (!integrity) {
+        namapenandatangan = ' '
+      } else {
+        namapenandatangan = meta.certs[0].issuedTo.commonName
+      }
+      if (!integrity) {
+        emailpenandatangan = ' '
+      } else {
+        emailpenandatangan = meta.certs[0].issuedTo.emailAddress
+      }
+      if (!integrity) {
+        lokasi = ' '
+      } else {
+        lokasi = meta.certs[0].issuedTo.localityName
+      }
+      if (!integrity) {
+        organisasi = ' '
+      } else {
+        organisasi = meta.certs[0].issuedTo.organizationName
+      }
+      if (!integrity) {
+        integritas = ' '
+      } else if (integrity == true) {
+        integritas = 'Documents have not changed'
+      } else {
+        integritas = 'Documents have not changed'
+      }
+
+      res.render('hasilverifikasi', {
+        layout: 'layouts/main-layout-login',
+        title: 'Digital Sign'
+      })
+    }
+  } else {
+    res.redirect('/signin')
+  }
 })
 
 app.get('/logout', (req, res) => {
@@ -1267,7 +1295,7 @@ app.get('/logout', (req, res) => {
 })
 
 app.delete('/document', (req, res) => {
-  Request.deleteOne({ _id: req.body.request_id }).then(result => {})
+
   Document.deleteOne({ _id: req.body._id }).then(result => {
     req.flash('msg', 'Document deleted successfully!')
     res.redirect('/document')
@@ -1364,22 +1392,118 @@ app.post('/document/signature_request/agree/:_id', async (req, res) => {
 
     for (let i = 0; i < documents.totalsigner; i++) {
       if (documents.requestsigner[i].email == req.session.user.email) {
-        const emailagree = documents.agree[i]
-        try {
-          Document.updateOne(
-            { _id: req.params._id },
-            {
-              $set: {
-                agree: [emailagree, req.session.user.email]
+        const emailagree = documents.agree[0]
+        const emailagree2 = documents.agree[1]
+        const emailagree3 = documents.agree[2]
+        const emailagree4 = documents.agree[3]
+        const emailagree5 = documents.agree[4]
+        if (documents.agree == 0) {
+          try {
+            Document.updateOne(
+              { _id: req.params._id },
+              {
+                $set: {
+                  agree: [req.session.user.email]
+                }
               }
-            }
-          ).then(result => {
-            req.flash('msg', 'Request has been approved')
+            ).then(result => {
+              req.flash('msg', 'Request has been approved')
+              res.redirect('/document/signature_request')
+            })
+          } catch (error) {
+            console.log(error)
             res.redirect('/document/signature_request')
-          })
-        } catch (error) {
-          console.log(error)
-          res.redirect('/document/signature_request')
+          }
+        }
+        else if (documents.agree.length == 1) {
+          try {
+            Document.updateOne(
+              { _id: req.params._id },
+              {
+                $set: {
+                  agree: [emailagree, req.session.user.email]
+                }
+              }
+            ).then(result => {
+              req.flash('msg', 'Request has been approved')
+              res.redirect('/document/signature_request')
+            })
+          } catch (error) {
+            console.log(error)
+            res.redirect('/document/signature_request')
+          }
+        }
+        else if (documents.agree.length == 2) {
+          try {
+            Document.updateOne(
+              { _id: req.params._id },
+              {
+                $set: {
+                  agree: [emailagree, emailagree2, req.session.user.email]
+                }
+              }
+            ).then(result => {
+              req.flash('msg', 'Request has been approved')
+              res.redirect('/document/signature_request')
+            })
+          } catch (error) {
+            console.log(error)
+            res.redirect('/document/signature_request')
+          }
+        }
+        else if (documents.agree.length == 3) {
+          try {
+            Document.updateOne(
+              { _id: req.params._id },
+              {
+                $set: {
+                  agree: [emailagree, emailagree2, emailagree3, req.session.user.email]
+                }
+              }
+            ).then(result => {
+              req.flash('msg', 'Request has been approved')
+              res.redirect('/document/signature_request')
+            })
+          } catch (error) {
+            console.log(error)
+            res.redirect('/document/signature_request')
+          }
+        }
+        else if (documents.agree.length == 4) {
+          try {
+            Document.updateOne(
+              { _id: req.params._id },
+              {
+                $set: {
+                  agree: [emailagree, emailagree2, emailagree3, emailagree4, req.session.user.email]
+                }
+              }
+            ).then(result => {
+              req.flash('msg', 'Request has been approved')
+              res.redirect('/document/signature_request')
+            })
+          } catch (error) {
+            console.log(error)
+            res.redirect('/document/signature_request')
+          }
+        }
+        else if (documents.agree.length == 5) {
+          try {
+            Document.updateOne(
+              { _id: req.params._id },
+              {
+                $set: {
+                  agree: [emailagree, emailagree2, emailagree3, emailagree4, emailagree5, req.session.user.email]
+                }
+              }
+            ).then(result => {
+              req.flash('msg', 'Request has been approved')
+              res.redirect('/document/signature_request')
+            })
+          } catch (error) {
+            console.log(error)
+            res.redirect('/document/signature_request')
+          }
         }
       }
     }
@@ -1395,7 +1519,14 @@ app.post('/document/signature_request/reject/:_id', async (req, res) => {
 
     for (let i = 0; i < documents.totalsigner; i++) {
       if (documents.requestsigner[i].email == req.session.user.email) {
-        const emailreject = documents.reject[i]
+
+        const emailreject = documents.reject[0]
+        const emailreject2 = documents.reject[1]
+        const emailreject3 = documents.reject[2]
+        const emailreject4 = documents.reject[3]
+        const emailreject5 = documents.reject[4]
+
+        console.log(documents.reject.length)
         const ttlreject = documents.totalreject
         if (documents.reject == 0) {
           try {
@@ -1404,7 +1535,7 @@ app.post('/document/signature_request/reject/:_id', async (req, res) => {
               {
                 $set: {
                   reject: [req.session.user.email],
-                  totalreject: 1
+                  totalreject: ttlreject + 1
                 }
               }
             ).then(result => {
@@ -1415,13 +1546,85 @@ app.post('/document/signature_request/reject/:_id', async (req, res) => {
             console.log(error)
             res.redirect('/document/signature_request')
           }
-        } else {
+        } else if (documents.reject.length == 1) {
           try {
             Document.updateOne(
               { _id: req.params._id },
               {
                 $set: {
                   reject: [emailreject, req.session.user.email],
+                  totalreject: ttlreject + 1
+                }
+              }
+            ).then(result => {
+              req.flash('msg', 'Request has been rejected')
+              res.redirect('/document/signature_request')
+            })
+          } catch (error) {
+            console.log(error)
+            res.redirect('/document/signature_request')
+          }
+        } else if (documents.reject.length == 2) {
+          try {
+            Document.updateOne(
+              { _id: req.params._id },
+              {
+                $set: {
+                  reject: [emailreject, emailreject2, req.session.user.email],
+                  totalreject: ttlreject + 1
+                }
+              }
+            ).then(result => {
+              req.flash('msg', 'Request has been rejected')
+              res.redirect('/document/signature_request')
+            })
+          } catch (error) {
+            console.log(error)
+            res.redirect('/document/signature_request')
+          }
+        } else if (documents.reject.length == 3) {
+          try {
+            Document.updateOne(
+              { _id: req.params._id },
+              {
+                $set: {
+                  reject: [emailreject, emailreject2, emailreject3, req.session.user.email],
+                  totalreject: ttlreject + 1
+                }
+              }
+            ).then(result => {
+              req.flash('msg', 'Request has been rejected')
+              res.redirect('/document/signature_request')
+            })
+          } catch (error) {
+            console.log(error)
+            res.redirect('/document/signature_request')
+          }
+        } else if (documents.reject.length == 4) {
+          try {
+            Document.updateOne(
+              { _id: req.params._id },
+              {
+                $set: {
+                  reject: [emailreject, emailreject2, emailreject3, emailreject4, req.session.user.email],
+                  totalreject: ttlreject + 1
+                }
+              }
+            ).then(result => {
+              req.flash('msg', 'Request has been rejected')
+              res.redirect('/document/signature_request')
+            })
+          } catch (error) {
+            console.log(error)
+            res.redirect('/document/signature_request')
+          }
+        } else if (documents.reject.length == 5) {
+          try {
+            Document.updateOne(
+              { _id: req.params._id },
+              {
+                $set: {
+                  reject: [emailreject, emailreject2, emailreject3, emailreject4, emailreject5, req.session.user.email],
                   totalreject: ttlreject + 1
                 }
               }

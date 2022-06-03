@@ -65,10 +65,7 @@ const documentSchema = new mongoose.Schema({
     type: String
     // required: true
   },
-  qrcode: {
-    type: String
-    // required: true
-  },
+
 
   timeCreated: {
     type: Date,

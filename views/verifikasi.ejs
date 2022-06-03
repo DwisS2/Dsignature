@@ -8,14 +8,14 @@
         <div class="row">
           <div class="col-xxl-12">
             <div class="page__title-wrapper mt-110">
-              <h3 class="page__title">Verification</h3>
+              <h3 class="page__title">Authentication</h3>
               <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
                   <li class="breadcrumb-item">
                     <a href="/home">Home</a>
                   </li>
                   <li class="breadcrumb-item active" aria-current="page">
-                    Verification
+                    Authentication
                   </li>
                 </ol>
               </nav>
@@ -29,14 +29,21 @@
         <div class="row">
           <div class="col-12">
             <div class="hero__content p-relative z-index-1">
+              <% if (msg.length !== 0) { %>
+                <div class="alert alert-success" role="alert">
+                  <%= msg %>
+                </div>
+                <br>
+                <br>
+                <% } %>
               <h3 class="hero__title">
                 <span class="yellow-shape"
-                  >Verifikasi
+                  >Digital Signature
                   <img
                     src="/img/shape/yellow-bg.png"
                     alt="yellow-shape"
                   /> </span
-                >Tanda Tangan Digital
+                >Authentication
               </h3>
               <form
                 method="post"
@@ -62,7 +69,7 @@
                       <h3 class="image-title"></h3>
                       <br />
                       <button type="submit" value="upload" class="remove-image">
-                        Verifikasi
+                        Authentication
                       </button>
                     </div>
                   </div>

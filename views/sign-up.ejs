@@ -97,9 +97,26 @@
                         placeholder="Password"
                         required
                         minlength="8"
+                        id="password1"
                       /><i class="fa fa-unlock-alt" aria-hidden="true"></i>
                     </div>
                   </div>
+                  <div class="sign__input-wrapper mb-25">
+                    <h5>Re-enter Password</h5>
+                    <div class="sign__input">
+                      <input
+                        type="password"
+                        name="password2"
+                        placeholder="Re-enter Password"
+                        required
+                        minlength="8"
+                        id="password2"
+                        onchange="checkPasswordMatch();"
+                      /><i class="fa fa-unlock-alt" aria-hidden="true"></i>
+                    </div>
+                  </div>
+                  <div class="registrationFormAlert" id="divCheckPasswordMatch"></div>
+                
 
                   <div
                     class="sign__action d-flex justify-content-between mb-30"
@@ -120,3 +137,18 @@
     </section>
   </main>
 </div>
+
+<script>
+  function checkPasswordMatch() {
+    var password = $("#password1").val();
+    var confirmPassword = $("#password2").val();
+
+    if (password != confirmPassword)
+        $("#divCheckPasswordMatch").html("Passwords do not match!").addClass('text-danger');
+    else
+        $("#divCheckPasswordMatch").html("Passwords match.").removeClass('text-danger').addClass('text-primary');
+}
+$(document).ready(function () {
+   $("#password1, #password2").keyup(checkPasswordMatch);
+});
+</script>

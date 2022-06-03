@@ -6,7 +6,7 @@
     li.appendChild(remove)
 
     li.innerHTML +=
-      '<select name="email" class=""aria-label="Default select example"id="addInput"><option selected>Choose a signer</option><% users.forEach((user, i) => { i++ %><option value="<%= user.email %>"><%= user.email %> (<%= user.name %>)</option><% }) %></select>'
+      '<select name="email" class=""aria-label="Default select example"id="addInput" required><option selected>Choose a signer</option><% users.forEach((user, i) => { i++ %><option value="<%= user.email %>"><%= user.email %> (<%= user.name %>)</option><% }) %></select>'
     li.innerHTML +=
       '<input type="number" class="btn-icon col-sm-1 text-center" name="page" min="1" max="999" placeholder="Page" required />'
 
@@ -112,29 +112,12 @@
                         name="document"
                         placeholder="document"
                         id="document"
+                        accept="application/pdf"
                         required
                       />
                     </div>
                   </div>
-                  <div class="mb-3 row">
-                    <label for="staticEmail" class="col-sm-2 col-form-label"
-                      >QR Code</label
-                    >
-                    <div class="col-sm-6">
-                      <div class="form-check">
-                        <input
-                          class="form-check-input"
-                          type="checkbox"
-                          value="yes"
-                          id="flexCheckDefault"
-                          name="qrcode"
-                        />
-                        <label class="form-check-label" for="flexCheckDefault">
-                          Showing QR Code in document?
-                        </label>
-                      </div>
-                    </div>
-                  </div>
+              
 
                   <div class="mb-3 row">
                     <label

@@ -123,6 +123,7 @@
                       </td>
                       <td>
                         <form></form>
+                        <% if (document.alreadysigned === document.totalsigner) { %> 
                         <form
                           action="/document/download/<%= document._id %>"
                           method="POST"
@@ -141,7 +142,7 @@
                             Download
                           </button>
                         </form>
-
+                        <% } %> 
                         <form
                           action="/document?_method=DELETE"
                           method="POST"
