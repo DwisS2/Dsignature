@@ -48,13 +48,13 @@
         <br />
         <% if (certificates.length != 0) { %>
         <button class="e-btn e-btn-border col-md-2" type="submit" hidden>
-          <a href="/digitalcertificate/createcertificate">
+          <a href="/dsignature/digitalcertificate/createcertificate">
             Create Certificate
           </a>
         </button>
         <% } else { %>
         <button class="e-btn e-btn-border col-md-2" type="submit">
-          <a href="/digitalcertificate/createcertificate">
+          <a href="/dsignature/digitalcertificate/createcertificate">
             Create Certificate
           </a>
         </button>
@@ -98,7 +98,7 @@
                       <td>
                         <form></form>
                         <form
-                          action="/certificate?_method=DELETE"
+                          action="/dsignature/deletecertificate?_method=DELETE"
                           method="POST"
                           class="d-inline"
                         >

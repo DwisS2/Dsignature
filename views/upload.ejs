@@ -1,12 +1,12 @@
 <script>
-  function createBtn (li) {
+  function createBtn(li) {
     // create remove button
     const remove = document.createElement('button')
     remove.className = 'btn-icon remove'
     li.appendChild(remove)
 
     li.innerHTML +=
-      '<select name="email" class=""aria-label="Default select example"id="addInput" required><option selected>Choose a signer</option><% users.forEach((user, i) => { i++ %><option value="<%= user.email %>"><%= user.email %> (<%= user.name %>)</option><% }) %></select>'
+      '<input type="text" list="users" name="email" class=""aria-label="Default select example"id="addInput" required/><datalist id="users"><option selected>Choose a signer</option><% users.forEach((user, i) => { i++ %><option value="<%= user.email %>"><%= user.email %> (<%= user.name %>)</option><% }) %></datalist>'
     li.innerHTML +=
       '<input type="number" class="btn-icon col-sm-1 text-center" name="page" min="1" max="999" placeholder="Page" required />'
 
@@ -15,10 +15,8 @@
 </script>
 <div id="__next">
   <main>
-    <section
-      class="page__title-area page__title-height page__title-overlay d-flex align-items-center"
-      style="background-image:url(/img/page-title/page1.jpg)"
-    >
+    <section class="page__title-area page__title-height page__title-overlay d-flex align-items-center"
+      style="background-image:url(/img/page-title/page1.jpg)">
       <div class="container">
         <div class="row">
           <div class="col-xxl-12">
@@ -27,7 +25,7 @@
               <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
                   <li class="breadcrumb-item">
-                    <a href="/home">Home</a>
+                    <a href="/dsignature/home">Home</a>
                   </li>
                   <li class="breadcrumb-item active" aria-current="page">
                     Document
@@ -45,161 +43,123 @@
     <section class="cart-area pt-100 pb-100">
       <div class="container">
         <div class="containeruploadsign">
-          <% if (msg.length !== 0) { %>
-          <div class="alert alert-success" role="alert">
-            <%= msg %>
-          </div>
-          <% } %>
-          <div class="card">
-            <div class="card-header">
-              Information
+          <% if (msg.length !==0) { %>
+            <div class="alert alert-success" role="alert">
+              <%= msg %>
             </div>
-            <div class="card-body">
-              <blockquote class="blockquote mb-0">
-                <p>
-                  Upload a PDF document and request a signature from others on
-                  the desired page
-                </p>
-              </blockquote>
-            </div>
-          </div>
-          <br />
-          <button class="e-btn e-btn-border col-md-2.5 " type="submit">
-            <a href="/document">
-              Uploaded Document
-            </a>
-          </button>
-
-          <button class="e-btn e-btn-border col-md-2" type="submit">
-            <a href="/document/signature_request">
-              Signature Request
-            </a>
-          </button>
-          <button
-            class="e-btn e-btn-border col-md-2 btn-active-document"
-            type="submit"
-          >
-            <a href="/document/upload">
-              Upload Document
-            </a>
-          </button>
-          <button class="e-btn e-btn-border col-md-2" type="submit">
-            <a href="/document/upload&sign">
-              Upload & Sign
-            </a>
-          </button>
-          <div class="row">
-            <div class="col-12">
-              <div class="hero__content p-relative z-index-1">
-                <h3 class="hero__title">
-                  <span class="yellow-shape">Upload </span>Document
-                </h3>
-
-                <br />
-                <form
-                  method="post"
-                  action="/document/upload"
-                  enctype="multipart/form-data"
-                  id="user_form"
-                >
-                  <div class="mb-3 row">
-                    <label for="staticEmail" class="col-sm-2 col-form-label"
-                      >Dokument (PDF)</label
-                    >
-                    <div class="col-sm-6">
-                      <input
-                        type="file"
-                        name="document"
-                        placeholder="document"
-                        id="document"
-                        accept="application/pdf"
-                        required
-                      />
-                    </div>
-                  </div>
-              
-
-                  <div class="mb-3 row">
-                    <label
-                      for="staticEmail"
-                      class="col-sm-2 col-form-label fs-5 fw-bold"
-                      >Signer list</label
-                    >
-                    <label for="staticEmail" class="col-sm-6 col-form-label"
-                      >(Fill it correctly because it cannot be changed again
-                      after saving)</label
-                    >
-                  </div>
-
-                  <div class="container">
-                    <div class="todoBlock">
-                      <!-- main title holder -->
-                      <div class="titleHolder">
-                        <h1>Signer</h1>
-                      </div>
-                      <!-- todo list -->
-                      <div class="todoList">
-                        <!-- list holder -->
-                        <div class="listHolder">
-                          <ul class="list" id="div"></ul>
-                        </div>
-                        <!-- form holder -->
-                        <div class="formHolder">
-                          <div class="col big">
-                            <select
-                              hidden
-                              class="form-select"
-                              aria-label="Default select example"
-                              id="addInput"
-                              name="coba"
-                            >
-                              <option selected>Choose a signer</option>
-                              <% users.forEach((user, i) => { i++ %>
-                              <option value="<%= user.email %>"
-                                ><%= user.email %> (<%= user.name %>)</option
-                              >
-                              <% }) %>
-                            </select>
-                          </div>
-                          <div class="col">
-                            <button
-                              type="button"
-                              id="addBtn"
-                              class="btn btn-primary"
-                            >
-                              Add signer
-                            </button>
-                          </div>
-                          <div class="col">
-                            <button
-                              type="button"
-                              id="toggleBtn"
-                              class="btn btn-primary"
-                            >
-                              Hide List
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <br />
-                  <div class="btnbiru">
-                    <button
-                      type="submit"
-                      value="upload"
-                      class="btn btn-primary"
-                      id="savebtn"
-                    >
-                      <i class="fa-solid fa-floppy-disk"></i>
-                      Save
-                    </button>
-                  </div>
-                </form>
+            <% } %>
+              <div class="card">
+                <div class="card-header">
+                  Information
+                </div>
+                <div class="card-body">
+                  <blockquote class="blockquote mb-0">
+                    <p>
+                      Upload a PDF document and request a signature from others on
+                      the desired page
+                    </p>
+                  </blockquote>
+                </div>
               </div>
-            </div>
-          </div>
+              <br />
+              <button class="e-btn e-btn-border col-md-2.5 " type="submit">
+                <a href="/dsignature/document">
+                  Uploaded Document
+                </a>
+              </button>
+
+              <button class="e-btn e-btn-border col-md-2" type="submit">
+                <a href="/dsignature/document/signature_request">
+                  Signature Request
+                </a>
+              </button>
+              <button class="e-btn e-btn-border col-md-2 btn-active-document" type="submit">
+                <a href="/dsignature/document/upload">
+                  Upload Document
+                </a>
+              </button>
+              <button class="e-btn e-btn-border col-md-2" type="submit">
+                <a href="/dsignature/document/upload&sign">
+                  Upload & Sign
+                </a>
+              </button>
+              <div class="row">
+                <div class="col-12">
+                  <div class="hero__content p-relative z-index-1">
+                    <h3 class="hero__title">
+                      <span class="yellow-shape">Upload </span>Document
+                    </h3>
+
+                    <br />
+                    <form method="post" action="/dsignature/document/upload" enctype="multipart/form-data"
+                      id="user_form">
+                      <div class="mb-3 row">
+                        <label for="staticEmail" class="col-sm-2 col-form-label">Dokument (PDF)</label>
+                        <div class="col-sm-6">
+                          <input type="file" name="document" placeholder="document" id="document"
+                            accept="application/pdf" required />
+                        </div>
+                      </div>
+
+
+                      <div class="mb-3 row">
+                        <label for="staticEmail" class="col-sm-2 col-form-label fs-5 fw-bold">Signer list</label>
+                        <label for="staticEmail" class="col-sm-6 col-form-label">(Fill it correctly because it cannot be
+                          changed again
+                          after saving)</label>
+                      </div>
+
+                      <div class="container">
+                        <div class="todoBlock">
+                          <!-- main title holder -->
+                          <div class="titleHolder">
+                            <h1>Signer</h1>
+                          </div>
+                          <!-- todo list -->
+                          <div class="todoList">
+                            <!-- list holder -->
+                            <div class="listHolder">
+                              <ul class="list" id="div"></ul>
+                            </div>
+                            <!-- form holder -->
+                            <div class="formHolder">
+                              <div class="col big">
+                                <select hidden class="form-select" aria-label="Default select example" id="addInput"
+                                  name="coba">
+                                  <option selected>Choose a signer</option>
+                                  <% users.forEach((user, i)=> { i++ %>
+                                    <option value="<%= user.email %>">
+                                      <%= user.email %> (<%= user.name %>)
+                                    </option>
+                                    <% }) %>
+                                </select>
+                              </div>
+                              <div class="col">
+                                <button type="button" id="addBtn" class="btn btn-primary">
+                                  Add signer
+                                </button>
+                              </div>
+                              <div class="col">
+                                <button type="button" id="toggleBtn" class="btn btn-primary">
+                                  Hide List
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <br />
+                      <div class="btnbiru">
+                        <button type="submit" value="upload" class="btn btn-primary" id="savebtn">
+                          <i class="fa-solid fa-floppy-disk"></i>
+                          Save
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
         </div>
       </div>
     </section>

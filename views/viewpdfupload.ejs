@@ -126,7 +126,7 @@
       <input
       id="text"
       type="text"
-      value="localhost:5000/doc/<%= document._id %>/signer/<%= signer._id %>"
+      value="localhost:5000/dsignature/doc/<%= document._id %>/signer/<%= signer._id %>"
       style="width:80%"
       hidden
     />
@@ -172,7 +172,7 @@
         </button>
       </div>
       <div class="tool">
-        <form method="post" action="/savepdfsign2?_method=put">
+        <form method="post" action="/dsignature/document/sign/savepdf?_method=put">
           <input type="hidden" name="_id" value="<%= document._id %>" />
           <input type="hidden" name="pdfbase64" id="pdfresult" />
           <button class="btn btn-light btn-sm" onclick="savePDF()">

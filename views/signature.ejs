@@ -12,7 +12,7 @@
               <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
                   <li class="breadcrumb-item">
-                    <a href="/home">Home</a>
+                    <a href="/dsignature/home">Home</a>
                   </li>
                   <li class="breadcrumb-item active" aria-current="page">
                     Signature
@@ -80,7 +80,7 @@
               <div class="collapse" id="collapseExample">
                 <form
                   method="post"
-                  action="/signature"
+                  action="/dsignature/uploadsignature"
                   enctype="multipart/form-data"
                 >
                   <div class="file-upload">
@@ -122,7 +122,7 @@
               </div>
 
               <div class="collapse" id="collapseExample2">
-                <form id="form-submit" method="POST" action="/signature2">
+                <form id="form-submit" method="POST" action="/dsignature/drawsignature">
                   <input
                     type="hidden"
                     name="signature2"
@@ -155,7 +155,7 @@
               <img class="card-img-top" src="<%=signature.img%>" />
 
               <form
-                action="/signature?_method=DELETE"
+                action="/dsignature/deletesignature?_method=DELETE"
                 method="POST"
                 class="d-inline"
               >

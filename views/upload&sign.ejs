@@ -1,24 +1,4 @@
-<!-- <script>
-  function initCanvas () {
-    var ctx = document.getElementById('my_canvas').getContext('2d')
-    ctx.canvas.addEventListener('mousemove', function (event) {
-      var mouseX = event.clientX - ctx.canvas.offsetLeft
-      var mouseY = event.clientY - ctx.canvas.offsetTop
-      var status = document.getElementById('status')
-      status.innerHTML = mouseX + ' | ' + mouseY
-    })
-    ctx.canvas.addEventListener('click', function (event) {
-      var mouseX = event.pageX - ctx.canvas.offsetLeft
-      var mouseY = event.pageY - ctx.canvas.offsetTop
-      // alert(mouseX+" | "+mouseY);
-      ctx.fillStyle = 'orange'
-      ctx.fillRect(mouseX - 15, mouseY - 15, 30, 30)
-    })
-  }
-  window.addEventListener('load', function (event) {
-    initCanvas()
-  })
-</script> -->
+
 
 <div id="__next">
   <main>
@@ -34,7 +14,7 @@
               <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
                   <li class="breadcrumb-item">
-                    <a href="/home">Home</a>
+                    <a href="/dsignature/home">Home</a>
                   </li>
                   <li class="breadcrumb-item active" aria-current="page">
                     Document
@@ -72,27 +52,27 @@
           </div>
           <br />
 
-          <button class="e-btn e-btn-border col-md-2.5" type="submit">
-            <a href="/document">
+          <button class="e-btn e-btn-border col-md-2.5 " type="submit">
+            <a href="/dsignature/document">
               Uploaded Document
             </a>
           </button>
 
           <button class="e-btn e-btn-border col-md-2" type="submit">
-            <a href="/document/signature_request">
+            <a href="/dsignature/document/signature_request">
               Signature Request
             </a>
           </button>
-          <button class="e-btn e-btn-border col-md-2" type="submit">
-            <a href="/document/upload">
+          <button
+            class="e-btn e-btn-border col-md-2 "
+            type="submit"
+          >
+            <a href="/dsignature/document/upload">
               Upload Document
             </a>
           </button>
-          <button
-            class="e-btn e-btn-border col-md-2 btn-active-document"
-            type="submit"
-          >
-            <a href="/document/upload&sign">
+          <button class="e-btn e-btn-border col-md-2 btn-active-document" type="submit">
+            <a href="/dsignature/document/upload&sign">
               Upload & Sign
             </a>
           </button>
@@ -109,7 +89,7 @@
 
                 <form
                   method="post"
-                  action="/document/upload&sign"
+                  action="/dsignature/document/upload&sign"
                   enctype="multipart/form-data"
                 >
                   <div class="mb-3 row">

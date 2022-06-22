@@ -1,9 +1,7 @@
 <div id="__next">
   <main>
-    <section
-      class="page__title-area page__title-height page__title-overlay d-flex align-items-center"
-      style="background-image:url(assets/img/page-title/page1.jpg)"
-    >
+    <section class="page__title-area page__title-height page__title-overlay d-flex align-items-center"
+      style="background-image:url(assets/img/page-title/page1.jpg)">
       <div class="container">
         <div class="row">
           <div class="col-xxl-12">
@@ -12,7 +10,7 @@
               <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
                   <li class="breadcrumb-item">
-                    <a href="/home">Home</a>
+                    <a href="/dsignature/home">Home</a>
                   </li>
                   <li class="breadcrumb-item active" aria-current="page">
                     Document
@@ -26,159 +24,135 @@
     </section>
     <section class="cart-area pt-100 pb-100">
       <div class="container">
-        <% if (msg.length !== 0) { %>
-        <div class="alert alert-success" role="alert">
-          <%= msg %>
-        </div>
-        <% } %>
-        <div class="card">
-          <div class="card-header">
-            Information
+        <% if (msg.length !==0) { %>
+          <div class="alert alert-success" role="alert">
+            <%= msg %>
           </div>
-          <div class="card-body">
-            <blockquote class="blockquote mb-0">
-              <p>
-                All documents that you have uploaded are displayed on this page.
-              </p>
-            </blockquote>
-          </div>
-        </div>
-        <br />
-        <button
-          class="e-btn e-btn-border col-md-2.5 btn-active-document"
-          type="submit"
-        >
-          <a href="/document">
-            Uploaded Document
-          </a>
-        </button>
-
-        <button class="e-btn e-btn-border col-md-2" type="submit">
-          <a href="/document/signature_request">
-            Signature Request
-          </a>
-        </button>
-        <button class="e-btn e-btn-border col-md-2" type="submit">
-          <a href="/document/upload">
-            Upload Document
-          </a>
-        </button>
-        <button class="e-btn e-btn-border col-md-2" type="submit">
-          <a href="/document/upload&sign">
-            Upload & Sign
-          </a>
-        </button>
-        <div class="row">
-          <div class="col-12">
-            <form action="#">
-              <div class="table-content table-responsive">
-                <table class="table" id="datatables" >
-                  <thead class="judultabel">
-                    <tr>
-                      <th class="product-thumbnail">No</th>
-
-                      <th class="cart-product-name">Document</th>
-                      <th class="product-price">Upload</th>
-                      <th class="product-quantity">Signed</th>
-                      <th class="product-quantity">Rejected</th>
-
-                      <th class="product-remove">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <% if (documents.length === 0) { %>
-                    <tr>
-                      <td colspan="6">
-                        <div class="alert alert-danger" role="alert">
-                          Document is still empty.
-                        </div>
-                      </td>
-                    </tr>
-                    <% } %> <% documents.forEach((document, i) => { i++ %>
-                    <tr>
-                      <td scope="row"><%= i++ %></td>
-
-                      <td><%= document.nm_document %></td>
-                      <td><%= document.timeCreated %></td>
-
-                      <td>
-                        <a class="badge-success"
-                          ><div class="progress" id="progress-bar">
-                            <div
-                              class="progress-bar"
-                              role="progressbar"
-                              style="width:<%= 100/(document.totalsigner/document.alreadysigned) %>%"
-                              aria-valuenow="<%= document.alreadysigned %>"
-                              aria-valuemin="0"
-                              aria-valuemax="<%= document.totalsigner %>"
-                            >
-                              <%= document.alreadysigned %> / <%=
-                              document.totalsigner %>
-                            </div>
-                          </div></a
-                        >
-                      </td>
-                      <td>
-                        <%= document.totalreject %>
-                      </td>
-                      <td>
-                        <form></form>
-                        <% if (document.alreadysigned === document.totalsigner) { %> 
-                        <form
-                          action="/document/download/<%= document._id %>"
-                          method="POST"
-                          class="d-inline"
-                        >
-                          <input
-                            type="hidden"
-                            name="_id"
-                            value="<%= document._id %>"
-                          />
-                          <button
-                            type="submit"
-                            class="btn btn-success badge rounded-pill"
-                          >
-                            <i class="bi bi-info-circle fa fa-download"></i>
-                            Download
-                          </button>
-                        </form>
-                        <% } %> 
-                        <form
-                          action="/document?_method=DELETE"
-                          method="POST"
-                          class="d-inline"
-                        >
-                          <input
-                            type="hidden"
-                            name="_id"
-                            value="<%= document._id %>"
-                          />
-
-                          <button
-                            type="submit"
-                            onclick="return confirm('yakin?')"
-                            class="btn btn-danger badge rounded-pill"
-                          >
-                            <i class="bi bi-info-circle"></i> Delete
-                          </button>
-                          <a
-                            href="/document/detail/<%= document._id %>"
-                            class="btn btn-primary badge rounded-pill"
-                            ><i class="bi bi-info-circle"></i> Detail</a
-                          >
-                        </form>
-                      </td>
-                    </tr>
-
-                    <% }) %>
-                  </tbody>
-                </table>
+          <% } %>
+            <div class="card">
+              <div class="card-header">
+                Information
               </div>
-            </form>
-          </div>
-        </div>
+              <div class="card-body">
+                <blockquote class="blockquote mb-0">
+                  <p>
+                    All documents that you have uploaded are displayed on this page.
+                  </p>
+                </blockquote>
+              </div>
+            </div>
+            <br />
+            <button class="e-btn e-btn-border col-md-2.5 btn-active-document" type="submit">
+              <a href="/dsignature/document">
+                Uploaded Document
+              </a>
+            </button>
+
+            <button class="e-btn e-btn-border col-md-2" type="submit">
+              <a href="/dsignature/document/signature_request">
+                Signature Request
+              </a>
+            </button>
+            <button class="e-btn e-btn-border col-md-2" type="submit">
+              <a href="/dsignature/document/upload">
+                Upload Document
+              </a>
+            </button>
+            <button class="e-btn e-btn-border col-md-2" type="submit">
+              <a href="/dsignature/document/upload&sign">
+                Upload & Sign
+              </a>
+            </button>
+            <div class="row">
+              <div class="col-12">
+                <form action="#">
+                  <div class="table-content table-responsive">
+                    <table class="table" id="datatables">
+                      <thead class="judultabel">
+                        <tr>
+                          <th class="product-thumbnail">No</th>
+
+                          <th class="cart-product-name">Document</th>
+                          <th class="product-price">Upload</th>
+                          <th class="product-quantity">Signed</th>
+                          <th class="product-quantity">Rejected</th>
+
+                          <th class="product-remove">Action</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <% if (documents.length===0) { %>
+                          <tr>
+                            <td colspan="6">
+                              <div class="alert alert-danger" role="alert">
+                                Document is still empty.
+                              </div>
+                            </td>
+                          </tr>
+                          <% } %>
+                            <% documents.forEach((document, i)=> { i++ %>
+                              <tr>
+                                <td scope="row">
+                                  <%= i++ %>
+                                </td>
+
+                                <td>
+                                  <%= document.nm_document %>
+                                </td>
+                                <td>
+                                  <%= document.timeCreated %>
+                                </td>
+
+                                <td>
+                                  <a class="badge-success">
+                                    <div class="progress" id="progress-bar">
+                                      <div class="progress-bar" role="progressbar"
+                                        style="width:<%= 100/(document.totalsigner/document.alreadysigned) %>%"
+                                        aria-valuenow="<%= document.alreadysigned %>" aria-valuemin="0"
+                                        aria-valuemax="<%= document.totalsigner %>">
+                                        <%= document.alreadysigned %> / <%= document.totalsigner %>
+                                      </div>
+                                    </div>
+                                  </a>
+                                </td>
+                                <td>
+                                  <%= document.totalreject %>
+                                </td>
+                                <td>
+                                  <form></form>
+                                  <% if (document.alreadysigned===document.totalsigner) { %>
+                                    <form action="/dsignature/document/download/<%= document._id %>" method="POST"
+                                      class="d-inline">
+                                      <input type="hidden" name="_id" value="<%= document._id %>" />
+                                      <button type="submit" class="btn btn-success badge rounded-pill">
+                                        <i class="bi bi-info-circle fa fa-download"></i>
+                                        Download
+                                      </button>
+                                    </form>
+                                    <% } %>
+                                      <form action="/dsignature/document/delete?_method=DELETE" method="POST"
+                                        class="d-inline">
+                                        <input type="hidden" name="_id" value="<%= document._id %>" />
+
+                                        <button type="submit" onclick="return confirm('yakin?')"
+                                          class="btn btn-danger badge rounded-pill">
+                                          <i class="bi bi-info-circle"></i> Delete
+                                        </button>
+                                        <a href="/dsignature/document/detail/<%= document._id %>"
+                                          class="btn btn-primary badge rounded-pill"><i class="bi bi-info-circle"></i>
+                                          Detail</a>
+                                      </form>
+                                </td>
+                              </tr>
+
+                              <% }) %>
+                      </tbody>
+                    </table>
+                  </div>
+                </form>
+              </div>
+            </div>
       </div>
     </section>
   </main>
 </div>
-
