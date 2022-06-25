@@ -9,7 +9,6 @@ const flash = require('express-flash')
 const session = require('express-session')
 var cookieParser = require('cookie-parser')
 var morgan = require('morgan')
-
 const getRouter = require("./routers/router");
 
 const app = express()
@@ -28,7 +27,6 @@ app.use(
     }
   })
 )
-
 
 app.use(flash())
 
@@ -52,9 +50,7 @@ app.set('view engine', 'ejs')
 
 app.use(express.urlencoded({ limit: '50mb', extended: true }))
 
-
 app.use("/dsignature", getRouter);
-
 
 mongoose
   .connect('mongodb://localhost:27017/digitalsignature', {

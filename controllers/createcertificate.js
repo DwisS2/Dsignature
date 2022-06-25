@@ -22,26 +22,28 @@ const createcertificate = async (req, res) => {
         const namap12 = nama + '.p12'
 
         try {
-            var KEYTOOL_COMMAND = './assets/file/keytool.exe'
+            var KEYTOOL_COMMAND = 'C:\\Program Files\\Java\\jdk1.8.0_333\\bin\\keytool'
             var ktArgs = [
                 '-genkey',
-                '-v',
+                '-alias',
+                'tesss',
+                '-keyalg',
+                'RSA',
+                '-keysize',
+                '2048',
+                '-storetype',
+                'PKCS12',
                 '-keystore',
                 namap12,
-                '-alias',
-                'test',
+                '-validity',
+                validity,
+                '-v',
                 '-dname',
                 'CN=' +
                 nama +
                 ', OU=SMAN 90 Jakarta Selatan, EMAILADDRESS=' +
                 email +
                 ', O=SMAN 90 Jakarta Selatan, L=Jakarta Selatan, S=Jakarta Selatan, C=ID',
-                '-keyalg',
-                'RSA',
-                '-keysize',
-                '2048',
-                '-validity',
-                validity
             ]
 
             var spawn = require('child_process').spawn
