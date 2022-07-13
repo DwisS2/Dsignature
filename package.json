@@ -37,5 +37,8 @@
     "passport": "^0.5.2",
     "passport-local": "^1.0.0",
     "pdf-lib": "^1.17.1"
+  },
+  "engines": {
+    "node": "16.x"
   }
 }
