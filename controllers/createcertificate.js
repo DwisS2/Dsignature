@@ -20,7 +20,6 @@ const createcertificate = async (req, res) => {
         const nama = req.session.user.name
         const email = req.session.user.email
         const namap12 = nama + '.p12'
-
         try {
             var KEYTOOL_COMMAND = 'C:\\Program Files\\Java\\jdk1.8.0_333\\bin\\keytool'
             var ktArgs = [
@@ -45,23 +44,18 @@ const createcertificate = async (req, res) => {
                 email +
                 ', O=SMAN 90 Jakarta Selatan, L=Jakarta Selatan, S=Jakarta Selatan, C=ID',
             ]
-
             var spawn = require('child_process').spawn
-
             var cmd = spawn(KEYTOOL_COMMAND, ktArgs)
             cmd.stdout.on('data', function (data) {
                 console.log('stdout: ' + data)
             })
-
             cmd.stderr.setEncoding('utf8')
             cmd.stderr.on('data', function (data) {
                 cmd.stdin.write(password + '\n')
             })
-
             cmd.on('close', function (code) {
                 console.log('child process exited with code ' + code)
             })
-
             setTimeout(() => {
                 const {
                     pemKey,
@@ -69,7 +63,6 @@ const createcertificate = async (req, res) => {
                     commonName,
                     validPeriod
                 } = p12.getPemFromP12(namap12, req.body.password)
-
                 const validity1 = JSON.stringify(commonName.validity.notBefore).slice(
                     1,
                     11
@@ -78,7 +71,6 @@ const createcertificate = async (req, res) => {
                     1,
                     11
                 )
-
                 const certificate = new Digital_certificate({
                     id_user: req.session.user._id,
                     serialnumber: commonName.serialNumber,
@@ -88,11 +80,9 @@ const createcertificate = async (req, res) => {
                     certificate_password: req.body.password,
                     status: 'active'
                 })
-
                 certificate.save()
                 fs.unlink(namap12, function (err) {
                     if (err) throw err
-                    // if no error, file has been deleted successfully
                     console.log('File deleted!')
                 })
                 res.redirect('/dsignature/digitalcertificate')

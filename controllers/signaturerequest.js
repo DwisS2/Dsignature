@@ -77,6 +77,7 @@ const downloaddocument = async (req, res) => {
     )
     res.send(download)
 }
+
 const viewdocument = async (req, res) => {
     const documents = await Document.findOne({
         _id: req.params._id
@@ -93,7 +94,6 @@ const viewdocument = async (req, res) => {
 
 const signdocument = async (req, res) => {
     if (req.session.user && req.cookies.user_sid) {
-        var number = req.body.serialnumber,
             password = req.body.password
 
         try {

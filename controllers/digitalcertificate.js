@@ -31,7 +31,7 @@ const index = async (req, res) => {
 const deletecertificate = async (req, res) => {
     Digital_certificate.deleteOne({ _id: req.body._id }).then(result => {
         req.flash('msg', 'Certificate deleted successfully!')
-        res.redirect('/digitalcertificate')
+        res.redirect('/dsignature/digitalcertificate')
     })
 }
 

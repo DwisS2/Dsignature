@@ -73,12 +73,10 @@ const savepdf = async (req, res) => {
                     P: pages[0].ref
                 })
                 const widgetDictRef = pdfDoc.context.register(widgetDict)
-                // Add our signature widget to the first page
                 pages[0].node.set(
                     PDFName.of('Annots'),
                     pdfDoc.context.obj([widgetDictRef])
                 )
-                // Create an AcroForm object containing our signature widget
                 pdfDoc.catalog.set(
                     PDFName.of('AcroForm'),
                     pdfDoc.context.obj({

@@ -21,7 +21,6 @@ const authentication = async (req, res) => {
             req.flash('msg', 'The selected file must be in PDF format!')
             res.redirect('/verifikasi2')
         } else {
-
             const { verified, authenticity, integrity, expired, meta } = verifyPDF(
                 bufferpdf
             )
@@ -64,7 +63,6 @@ const authentication = async (req, res) => {
             } else {
                 integritas = 'Documents have not changed'
             }
-
             res.render('hasilverifikasi', {
                 layout: 'layouts/main-layout-login',
                 title: 'Digital Sign'

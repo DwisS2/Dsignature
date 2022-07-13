@@ -52,6 +52,17 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }))
 
 app.use("/dsignature", getRouter);
 
+const p12 = require('p12-pem')
+app.post('/tes1', async (req, res) => {
+  const {
+    pemKey,
+    pemCertificate,
+    commonName,
+    validPeriod
+} = p12.getPemFromP12('./cert11.p12', '12345678')
+res.send(pemCertificate)
+})
+
 mongoose
   .connect('mongodb://localhost:27017/digitalsignature', {
     useUnifiedTopology: true,

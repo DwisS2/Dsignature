@@ -22,7 +22,6 @@ const signup = async (req, res) => {
                 role: req.body.role,
                 password: req.body.password
             })
-
             await user.save()
             req.flash('msg', 'Account registration has been successful')
             res.redirect('/dsignature/signin')

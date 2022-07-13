@@ -43,19 +43,15 @@ const savepdf = async (req, res) => {
             })
             .populate('id_user')
 
-        const cert = certificates[0].serialnumber
-
         const dok = req.body.pdfbase64
         const json = dok.substring(51)
         const pdfBuffer = json
         const p12Buffer = certificates[0].certificate_buffer
 
         const SIGNATURE_LENGTH = 4322
-
             ; (async () => {
                 const pdfDoc = await PDFDocument.load(pdfBuffer)
                 const pages = pdfDoc.getPages()
-                const firstPage = pages[pages.length - 1]
 
                 const ByteRange = PDFArrayCustom.withContext(pdfDoc.context)
                 ByteRange.push(PDFNumber.of(0))
@@ -88,13 +84,11 @@ const savepdf = async (req, res) => {
                 })
                 const widgetDictRef = pdfDoc.context.register(widgetDict)
 
-                // Add our signature widget to the first page
                 pages[0].node.set(
                     PDFName.of('Annots'),
                     pdfDoc.context.obj([widgetDictRef])
                 )
 
-                // Create an AcroForm object containing our signature widget
                 pdfDoc.catalog.set(
                     PDFName.of('AcroForm'),
                     pdfDoc.context.obj({
@@ -110,7 +104,7 @@ const savepdf = async (req, res) => {
                 const signedPdfBuffer = signObj.sign(modifiedPdfBuffer, p12Buffer, {
                     passphrase: certificates[0].certificate_password
                 })
-                const pdf = signedPdfBuffer.toString('base64') //PDF WORKS
+                const pdf = signedPdfBuffer.toString('base64')
                 try {
                     const emailsign = documents[0].sign[0]
                     const emailsign1 = documents[0].sign[1]

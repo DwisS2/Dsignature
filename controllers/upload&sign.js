@@ -53,7 +53,6 @@ const uploadpdf = async (req, res) => {
     if (req.session.user && req.cookies.user_sid) {
         var number = req.body.serialnumber,
             password = req.body.certificate_password
-
         try {
             var user = await Digital_certificate.findOne({
                 id_user: req.session.user._id
@@ -85,7 +84,6 @@ const uploadpdf = async (req, res) => {
                 })
                 await document.save()
                 const id_doc = document._id
-
                 res.redirect('/dsignature/document/upload&sign/' + id_doc)
             }
         } catch (error) {
