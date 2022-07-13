@@ -10,7 +10,7 @@ const session = require('express-session')
 var cookieParser = require('cookie-parser')
 var morgan = require('morgan')
 const getRouter = require("./routers/router");
-
+const database = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/digitalsignature'
 const app = express()
 app.use(morgan('dev'))
 
@@ -64,7 +64,7 @@ res.send(pemCertificate)
 })
 
 mongoose
-  .connect('mongodb://localhost:27017/digitalsignature', {
+  .connect(database, {
     useUnifiedTopology: true,
     useNewUrlParser: true
   })
