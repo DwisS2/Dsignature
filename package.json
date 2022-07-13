@@ -39,6 +39,8 @@
     "pdf-lib": "^1.17.1"
   },
   "engines": {
-    "node": "16.x"
+    "node": "16.x",
+    "npm": "6.x",
+    "heroku-prebuild": "heroku config:set NODE_MODULES_CACHE=false"
   }
 }
