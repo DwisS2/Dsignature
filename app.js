@@ -10,7 +10,7 @@ const session = require('express-session')
 var cookieParser = require('cookie-parser')
 var morgan = require('morgan')
 const getRouter = require("./routers/router");
-const database = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/digitalsignature'
+const database = process.env.MONGO_URI || 'mongodb+srv://ilham:ilham072018@cluster0.gavlo.mongodb.net/dsignature?retryWrites=true&w=majority'
 const app = express()
 app.use(morgan('dev'))
 
@@ -53,14 +53,14 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }))
 app.use("/dsignature", getRouter);
 
 const p12 = require('p12-pem')
-app.post('/tes1', async (req, res) => {
+app.get('/tes1', async (req, res) => {
   const {
     pemKey,
     pemCertificate,
     commonName,
     validPeriod
-} = p12.getPemFromP12('./cert11.p12', '12345678')
-res.send(pemCertificate)
+} = p12.getPemFromP12('./tes3.p12', 'ilham123')
+res.send(commonName)
 })
 
 mongoose

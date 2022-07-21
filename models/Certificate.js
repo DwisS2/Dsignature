@@ -1,5 +1,4 @@
 const mongoose = require('mongoose')
-const bcrypt = require('bcrypt')
 
 const certificateSchema = new mongoose.Schema({
   certificate_password: {
@@ -41,16 +40,8 @@ certificateSchema.pre('save', function (next) {
   if (!this.isModified('password')) {
     return next()
   }
-  this.password = bcrypt.hashSync(this.password, 10)
   next()
 })
-
-certificateSchema.methods.comparePassword = function (plaintext, callback) {
-  return callback(
-    null,
-    bcrypt.compareSync(plaintext, this.certificate_password)
-  )
-}
 
 const Digital_certificate = mongoose.model('certificates', certificateSchema)
 module.exports = Digital_certificate

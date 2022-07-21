@@ -21,7 +21,7 @@ const createcertificate = async (req, res) => {
         const email = req.session.user.email
         const namap12 = nama + '.p12'
         try {
-            var KEYTOOL_COMMAND = 'C:\\Program Files\\Java\\jdk1.8.0_333\\bin\\keytool'
+            var KEYTOOL_COMMAND = 'assets\\jdk1.8.0_333\\bin\\keytool'
             var ktArgs = [
                 '-genkey',
                 '-alias',
